@@ -45,6 +45,25 @@ if [ -n "$http_proxy" ]; then
   PROXY=$http_proxy
 fi
 
+function valid_ip()
+{
+    local  ip=$1
+    local  stat=1
+
+    if [[ $ip =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]]; then
+        OIFS=$IFS
+        IFS='.'
+        ip=($ip)
+        IFS=$OIFS
+        [[ ${ip[0]} -le 255 && ${ip[1]} -le 255 \
+            && ${ip[2]} -le 255 && ${ip[3]} -le 255 ]]
+        stat=$?
+    fi
+    return $stat
+}
+
+export valid_ip
+
 # parse CLI options
 while getopts "h:p:s:" OPTION
 do
@@ -95,4 +114,48 @@ if ! $(run_cmd echo 8021q >> /etc/modules ) || ! $(run_cmd modprobe 8021q) ; the
 fi
 
 if [ ${VLAN} ] ; then
+  while true; do
+    while true; do
+      read -ep "Enter the VLAN:${VLAN} IPv4 Address: " ip_address
+      if ! valid_ip $ip_address ; then
+        echo "That's not an IP address"
+      else
+        break
+      fi
+    done
 
+    while true; do
+      read -ep "Enter the VLAN:${VLAN} Netmask: " ip_netmask
+      if ! valid_ip $ip_netmask ; then
+        echo "That's not a valid IPv4 Netmask"
+      else
+        break
+      fi
+    done
+
+    while true; do
+      read -ep "Enter the VLAN:${VLAN} IPv4 Gateway: " ip_gateway
+      if ! valid_ip $ip_gateway ; then
+        echo "That's not a valid IPv4 address"
+      else
+        break
+      fi
+    done
+
+    while true; do
+      read -ep "Enter the initial VLAN:${VLAN} DNS Server IP Address: " dns_address
+      if ! valid_ip $dns_address ; then
+        echo "That's not a valid IPv4 address"
+      else
+        break
+      fi
+    done
+
+    echo "IP Address: $ip_address, Netmask: $ip_netmask, Gateway: $ip_gateway, DNS: $dns_address"
+    read -n 1 -p "Is this correct [y|n]" yn
+    case $yn in
+      [Yy]* ) break;;
+      [Nn]* ) echo "Try again."
+    esac
+  done
+fi
