@@ -151,6 +151,14 @@ if [ ${VLAN} ] ; then
       fi
     done
 
+    while true; do
+      read -n 1 -p "Do you want 9K MTU? [y|n]" yn
+      case $yn in
+        [Yy]* ) MTU=9000; echo 'MTU will be set to 8950, configure your VMs appropriately'; break;;
+        [Nn]* ) echo 'MTU will remain default, it is recommened to set VM MTU to 1450';
+      esac
+
+
     echo "IP Address: $ip_address, Netmask: $ip_netmask, Gateway: $ip_gateway, DNS: $dns_address"
     read -n 1 -p "Is this correct [y|n]" yn
     case $yn in
@@ -158,4 +166,105 @@ if [ ${VLAN} ] ; then
       [Nn]* ) echo "Try again."
     esac
   done
+
+  initial_interface=`grep 'auto eth' /etc/network/interfaces | awk '{print $2}'`
+  if [ ! -z $initial_interface ]; then
+    sed -e '/gateway/d ' -i /etc/network/interfaces
+    dns_search=`grep dns-search /etc/network/interfaces | awk '{print $2}'`
+    cat >> /etc/network/interfaces <<EOF
+
+auto $initial_interface
+iface $initial_interface.$VLAN inet static
+  address $ip_address
+  netmask $ip_netmask
+  gateway $ip_gateway
+  dns-nameservers $dns_address
+  dns-search $dns_search
+EOF
+    vconfig add $initial_interface $VLAN
+  fi  
+
+  if [ ! -z $MTU ]; then
+    sed -e '/iface eth[0-9]/a "  mtu=$MTU"' -i /etc/network/interfaces   
+
+  echo "NOTE: You should reboot and log in on: $ip_address before proceeding"
 fi
+
+
+# Git clone puppet_openstack_builder from cisco
+echo "Cloning puppet_openstack_builder branch from CiscoSystems github.com..."
+if [ -d /root/puppet_openstack_builder ] ; then
+  echo -e "Looks like perhaps you ran this script before? We'll try to update your os-docs directory, just in case..."
+  if ! run_cmd git --git-dir=/root/puppet_openstack_builder/.git/ pull ; then
+     echo "That did not work.  Perhaps rename your os-docs directory, and try again?"
+     exit 1
+        fi
+fi
+
+# Get a new set, as there was no previous download
+if [ ! -d /root/puppet_openstack_builder ] ; then
+  if ! run_cmd git clone -b icehouse https://github.com/CiscoSystems/puppet_openstack_builder /root/puppet_openstack_builder ; then
+    echo "Can't run git clone!"
+    exit 1
+  fi
+fi
+
+# add ml2 parameters
+cat >> /root/puppet_openstack_builder/data/hiera_data/user.common.yaml <<EOF
+neutron::server::disableml2: false
+EOF
+
+# create scenario for lb_vxlan with no l3
+if [ -f /root/puppet_openstack_builder/data/scenarios/all_in_one.yaml.orig ]; then
+  echo "You've run this script already, please just run: \
+puppet apply -v /etc/pupppet/manifests/site.pp"
+  exit 1
+fi
+cp /root/puppet_openstack_builder/data/scenarios/all_in_one.yaml{,.orig}
+cat > /root/puppet_openstack_builder/data/scenarios/all_in_one.yaml <<EOF
+#
+# scenario for lb_vxlan
+#
+roles:
+  :
+    classes:
+      - coe::base
+       - "nova::%{rpc_type}"
+    class_groups:
+      - build
+      - glance_all
+      - keystone_all
+      - cinder_controller
+      - nova_controller
+      - horizon
+      - "%{db_type}_database"
+      - nova_compute
+      - cinder_volume
+      - l2_network_controller
+      - test_file
+  compute:
+    classes:
+      - coe::base
+    class_groups:
+      - nova_compute
+      - cinder_volume
+EOF
+
+# create classgroup for l2_network_controller
+cat > /root/puppet_openstack_builder/data/class_groups/l2_network_controller.yaml <<EOF
+classes:
+  - "%{network_service}"
+  - "%{network_service}::server"
+  - "%{network_service}::server::notifications"
+  - "%{network_service}::config"
+  - "%{network_service}::agents::metadata"
+  - "%{network_service}::agents::l3"
+  - "%{network_service}::agents::lbaas"
+  - "%{network_service}::agents::vpnaas"
+  - "%{network_service}::agents::dhcp"
+  - "%{network_service}::services::fwaas"
+  - vxlan_lb::ml2
+EOF
+
+
+# reboot
