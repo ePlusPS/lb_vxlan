@@ -67,7 +67,7 @@ function valid_ip()
 export valid_ip
 
 # parse CLI options
-while getopts "h:p:v:m:" OPTION
+while getopts "hmrp:v:" OPTION
 do
   case $OPTION in
     h)
