@@ -178,7 +178,9 @@ if [ ! -z "${VLAN}" ] ;then
   if [ ! -z $initial_interface ] ;then
     sed -e '/gateway/d ' -i /etc/network/interfaces
     dns_search=`grep dns-search /etc/network/interfaces | awk '{print $2}'`
-    vconfig add $initial_interface $VLAN
+    if [ -z "`ifconifg | grep $initial_interface | grep $VLAN`" ] ;then
+      vconfig add $initial_interface $VLAN
+    fi
     cat >> /etc/network/interfaces <<EOF
     auto $initial_interface.$VLAN
     iface $initial_interface.$VLAN inet static
@@ -192,7 +194,6 @@ EOF
 
   if [ ! -z $MTU ]; then
     sed -e "/iface eth[0-9]/a mtu=${MTU}" -i /etc/network/interfaces
-    echo "NOTE: You should reboot and log in on: $ip_address before proceeding"
   fi
 fi
 
