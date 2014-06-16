@@ -182,18 +182,19 @@ if [ ! -z "${VLAN}" ] ;then
       vconfig add $initial_interface $VLAN
     fi
     cat >> /etc/network/interfaces <<EOF
-    auto $initial_interface.$VLAN
-    iface $initial_interface.$VLAN inet static
-    address $ip_address
-    netmask $ip_netmask
-    gateway $ip_gateway
-    dns-nameserver $dns_server
-    dns-search $dns_search
+auto $initial_interface.$VLAN
+iface $initial_interface.$VLAN inet static
+  address $ip_address
+  netmask $ip_netmask
+  gateway $ip_gateway
+  dns-nameserver $dns_server
+  dns-search $dns_search
 EOF
   fi
 
   if [ ! -z $MTU ]; then
-    sed -e "/iface eth[0-9]/a mtu=${MTU}" -i /etc/network/interfaces
+    sed -e "/iface eth[0-9]/a \
+    mtu=${MTU}" -i /etc/network/interfaces
   fi
 fi
 
