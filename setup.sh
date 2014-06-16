@@ -386,14 +386,14 @@ sed -e 's/tenant_network_type: .*/tenant_network_type: vxlan/' \
   -i /root/puppet_openstack_builder/data/global_hiera_params/common.yaml
 
 if [ ! -z "${MTU}" ] ;then
-  sed -e "/openstack_release/a neutron::network_device_mtu=${MTU}" \
+  sed -e "/openstack_release/a neutron::network_device_mtu: ${MTU}" \
     -i /root/puppet_openstack_builder/install-scripts/install.sh
 
   cat > /root/puppet_openstack_builder/install-scripts/fix_mtu.sh <<EOF
 #!/bin/bash
-sed -e '/DEFAULT\/dhcp_agents/a \ \ \ \ "DEFAULT/network_device_mtu":      value => \\$network_device_mtu;' \
+sed -e '/DEFAULT\/dhcp_agents/a \ \ \ \ "DEFAULT/network_device_mtu":      value => \$network_device_mtu;' \
   -i /usr/share/puppet/modules/neutron/manifests/init.pp
-sed -e '/\\$dhcp_agents_per_network.*=/a \ \ \\$network_device_mtu          = "None",'\
+sed -e '/\$dhcp_agents_per_network.*=/a \ \ \$network_device_mtu          = "None",'\
   -i /usr/share/puppet/modules/neutron/manifests/init.pp
 EOF
 
