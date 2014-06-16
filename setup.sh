@@ -145,6 +145,11 @@ if ! run_cmd apt-get $APT_CONFIG install -qym git vlan vim; then
   exit 1
 fi
 
+echo "configure vhost_net module for better VM network performance"
+echo 'vhost_net' >> /etc/modules
+modprobe vhost_net
+
+
 echo "Enable 8021q module for VLAN config"
 if [ -z "`grep 8021q /etc/modules`" ] ;then 
   echo 8021q >> /etc/modules
@@ -360,6 +365,7 @@ sed -e 's/ovs/linuxbridge/' -i /root/puppet_openstack_builder/data/global_hiera_
 echo "Add VXLan configuration to default user.yaml for all_in_one/lb_vxlan"
 sed -e '/neutron::agents/a \
 openstack_release: icehouse\
+service_plugins: \
 vni_ranges:\
  - 100:10000\
 vxlan_group: 229.1.2.3\
@@ -379,6 +385,10 @@ nova::compute::neutron::libvirt_vif_driver: nova.virt.libvirt.vif.LibvirtGeneric
 neutron::agents::l3::interface_driver: neutron.agent.linux.interface.BridgeInterfaceDriver
 neutron::agents::dhcp::interface_driver: neutron.agent.linux.interface.BridgeInterfaceDriver
 EOF
+
+echo "Remove network::agents plugin from nova_compute.yaml classgroup"
+sed -e '/agents/d ' -i /root/puppet_openstack_builder/data/class_groups/nova_compute.yaml
+
 
 sed -e 's/network_plugin:.*/network_plugin: ml2_lb_vxlan/' \
   -i /root/puppet_openstack_builder/data/global_hiera_params/common.yaml
