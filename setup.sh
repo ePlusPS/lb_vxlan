@@ -209,7 +209,7 @@ if [ -f /root/puppet_openstack_builder/data/scenarios/all_in_one.yaml.orig ]; th
   echo -e "You've run this script already, please just run: \n  puppet apply -v /etc/pupppet/manifests/site.pp"
   exit 1
 fi
-
+echo "Over-write all_in_one.yaml scenario with lb_vxlan scenario (backup to .orig)"
 cp /root/puppet_openstack_builder/data/scenarios/all_in_one.yaml{,.orig}
 cat > /root/puppet_openstack_builder/data/scenarios/all_in_one.yaml <<EOF
 #
@@ -241,6 +241,7 @@ roles:
 EOF
 
 # create classgroup for l2_network_controller
+echo "Create a l2_newtork_controller class_group"
 cat > /root/puppet_openstack_builder/data/class_groups/l2_network_controller.yaml <<EOF
 classes:
   - "%{network_service}"
@@ -256,6 +257,26 @@ classes:
   - vxlan_lb::ml2
 EOF
 
+echo "Fix install.sh script to include cobbler_server in all_in_one/lb_vxlan model"
+sed -e '/cobbler_server/d ' -i /root/puppet_openstack_builder/install-scripts/install.sh
+
+echo "Add VXLan configuration to default user.yaml for all_in_one/lb_vxlan"
+sed -e '/neutron::agents/a 
+openstack_release: icehouse
+vni_ranges:
+ - 100:10000
+vxlan_group: 229.1.2.3
+flat_networks:
+ - physnet1
+physical_interface_mappings:
+ - physnet1:${external_interface}
+
+'
+
+echo "Add VXLan+LinuxBridge module to puppet_openstack_builder and copy over modules"
+tar xfz vxlan_lb.tgz -C /root/puppet_openstack_builder/modules/
+sed -e '/builder\/manifests/a cp -R ~\/puppet_openstack_builder\/modules \/etc\/puppet\/' \
+  -i /root/puppet_openstack_builder/install-scripts/install.sh
 echo "It is recomended that you reboot and log in via the newly defined IP address: ${ip_address}"
 
 # reboot
