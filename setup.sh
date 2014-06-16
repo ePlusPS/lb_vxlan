@@ -7,7 +7,6 @@
 # for this enviornment
 
 set -o errexit
-set -x
 
 usage() {
 cat <<EOF
@@ -192,7 +191,7 @@ EOF
   fi
 
   if [ ! -z $MTU ]; then
-    sed -e '/iface eth[0-9]/a "  mtu=$MTU"' -i /etc/network/interfaces
+    sed -e "/iface eth[0-9]/a mtu=${MTU}" -i /etc/network/interfaces
     echo "NOTE: You should reboot and log in on: $ip_address before proceeding"
   fi
 fi
