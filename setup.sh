@@ -256,7 +256,7 @@ if [ ! -d /root/puppet_openstack_builder ] ; then
 fi
 
 if [ ! -z "$dmz" ]; then
-sed -e 's/openstack-repo.cisco.com/10.0.100.21/' -i /root/puppet_openstack_repo/install-scripts/install.sh
+sed -e 's/openstack-repo.cisco.com/10.0.100.21/' -i /root/puppet_openstack_builder/install-scripts/install.sh
 cat >> /root/puppet_openstack_builder/data/hiera_data/user.common.yaml <<EOF
 coe::base::openstack_repo_location: http://10.0.100.21/openstack/cisco
 coe::base::puppet_repo_location: http://10.0.100.21/openstack/puppet
