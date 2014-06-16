@@ -358,7 +358,7 @@ EOF
 
 sed -e 's/network_plugin:.*/network_plugin: ml2_lb_vxlan/' \
   -i /root/puppet_openstack_builder/data/global_hiera_params/common.yaml
-sed -e 's/tenant_network_type: .*/tenant_network_type: vxlan' \
+sed -e 's/tenant_network_type: .*/tenant_network_type: vxlan/' \
   -i /root/puppet_openstack_builder/data/global_hiera_params/common.yaml
 
 if [ ! -z "${MTU}" ] ;then
