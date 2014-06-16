@@ -206,8 +206,8 @@ if [ ! -z "${VLAN}" ] ;then
     esac
   done
 
-  initial_interface=`grep 'auto eth' /etc/network/interfaces | awk '{print $2}'`
-  if [ ! -z $initial_interface ] ;then
+  initial_interface=`grep 'auto eth' /etc/network/interfaces | head -1 | awk '{print $2}'`
+  if [ ! -z "$initial_interface" ] ;then
     sed -e '/gateway/d ' -i /etc/network/interfaces
     dns_search=`grep dns-search /etc/network/interfaces | awk '{print $2}'`
     if [ -z "`ifconfig -a | grep $initial_interface | grep $VLAN`" ] ;then
@@ -319,7 +319,7 @@ sed -e "s/default_interface:-eth0/default_interface:-${default_interface}/" \
   -i /root/puppet_openstack_builder/install-scripts/install.sh
 sed -e "s/external_interface:-eth1/external_interface:-${external_interface}/" \
   -i /root/puppet_openstack_builder/install-scripts/install.sh
-if [ ! -z "$ntp_address" ] ;then
+if [ ! -z "${ntp_address}" ] ;then
 sed -e "s/pool.ntp.org/${ntp_address}/" \
   -i /root/puppet_openstack_builder/install-scripts/install.sh
 fi
