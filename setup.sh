@@ -198,12 +198,14 @@ if [ ! -z "${VLAN}" ] ;then
       done
     fi
 
-    echo -e "IP Address: $ip_address\nNetmask: $ip_netmask\nGateway: $ip_gateway\nDNS: $dns_address\nMTU: ${MTU:-1500}\n"
-    read -n 1 -p "Is this correct [y|n]" yn
-    case $yn in
-      [Yy]* ) break;;
-      [Nn]* ) echo "Try again."
-    esac
+    if [ $# -eq 1 ] ;then
+      echo -e "IP Address: $ip_address\nNetmask: $ip_netmask\nGateway: $ip_gateway\nDNS: $dns_address\nMTU: ${MTU:-1500}\n"
+      read -n 1 -p "Is this correct [y|n]" yn
+      case $yn in
+        [Yy]* ) break;;
+        [Nn]* ) echo "Try again."
+      esac
+    fi
   done
 
   initial_interface=`grep 'auto eth' /etc/network/interfaces | head -1 | awk '{print $2}'`
