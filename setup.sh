@@ -267,6 +267,7 @@ if [ ! -d /root/puppet_openstack_builder ] ; then
 fi
 
 if [ ! -z "$dmz" ]; then
+echo 'Acquire::http::Proxy "http://10.0.149.10:3142";' >/etc/apt/apt.conf.d/01proxy
 sed -e 's/openstack-repo.cisco.com/10.0.100.21/' -i /root/puppet_openstack_builder/install-scripts/install.sh
 sed -e 's/openstack-repo.cisco.com/10.0.100.21/' -i /root/puppet_openstack_builder/install-scripts/cisco.install.sh
 
