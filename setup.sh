@@ -344,6 +344,22 @@ neutron::agents::linuxbridge::physical_interface_mappings:\
  - physnet1:\${external_interface}\
 ' -i /root/puppet_openstack_builder/install-scripts/install.sh
 
+echo "Setup Ml2_plugin network_plugin yaml"
+cat > /root/puppet_openstack_builder/data/hiera_data/network_plugin/ml2_lb_vxlan.yaml <<EOF
+neutron::core_plugin: neutron.plugins.ml2.plugin.Ml2Plugin
+
+nova::compute::neutron::libvirt_vif_driver: "nova.virt.libvirt.vif.LibvirtGeneri
+cVIFDriver"
+neutron::agents::l3::interface_driver: neutron.agent.linux.interface.BridgeInter
+faceDriver
+neutron::agents::dhcp::interface_driver: neutron.agent.linux.interface.BridgeInt
+erfaceDriver
+EOF
+
+sed -e 's/network_plugin:.*/network_plugin: ml2_lb_vxlan/' \
+  -i /root/puppet_openstack_builder/data/global_hiera_params/common.yaml
+
+
 if [ ! -z "${MTU}" ] ;then
   sed -e "/openstack_release/a neutron::network_device_mtu=${MTU}" \
     -i /root/puppet_openstack_builder/install-scripts/install.sh
