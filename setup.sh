@@ -14,9 +14,11 @@ cat <<EOF
 usage: $0 options
 
 OPTIONS:
--h Show this message
--p {proxy_address} http proxy i.e. -p http://username:password@host:port/
--s {vlan} single interface vlan to enable
+-h                  Show this message
+-p {proxy_address}  http proxy i.e. -p http://username:password@host:port/
+-v {vlan}           single interface vlan to enable
+-m                  set 8950 MTU
+-r                  run install.sh for all_in_one/lb_vxlan use case
 EOF
 }
 export -f usage
@@ -66,7 +68,7 @@ function valid_ip()
 export valid_ip
 
 # parse CLI options
-while getopts "h:p:s:" OPTION
+while getopts "h:p:v:m:" OPTION
 do
   case $OPTION in
     h)
@@ -78,12 +80,23 @@ do
       export http_proxy=$PROXY
       export https_proxy=$PROXY
       ;;
-    s)
+    v)
       VLAN=$OPTARG
       export vlan=$VLAN
       ;;
+    m)
+       export MTU=9000
+      ;;
+    r)
+      export run_all_in_one=true
+      ;;
   esac
 done
+
+if [ ${ARGV} eq "0" ] ;then
+  usage()
+  exit1
+fi
 
 # Make sure the apt repository list is up to date
 echo -e "\n\nUpdate apt repository...\n\n"
@@ -98,6 +111,7 @@ if ! run_cmd apt-get $APT_CONFIG install -qym git vlan vim; then
   echo "Can't install prerequisites!..."
   exit 1
 fi
+
 
 echo "Enable 8021q module for VLAN config"
 if [ -z "`grep 8021q /etc/modules`" ] ;then 
@@ -143,13 +157,15 @@ if [ ! -z "${VLAN}" ] ;then
       fi
     done
 
-    while true; do
-      read -n 1 -p "Do you want 9K MTU? [y|n]" yn
-      case $yn in
-        [Yy]* ) MTU=9000; echo 'MTU will be set to 8950, configure your VMs appropriately'; break;;
-        [Nn]* ) echo 'MTU will remain default, it is recommened to set VM MTU to 1450';
-      esac
-    done
+    if [ ! "${MTU}" ] ;then
+      while true; do
+        read -n 1 -p "Do you want 9K MTU? [y|n]" yn
+        case $yn in
+          [Yy]* ) MTU=9000; echo 'MTU will be set to 8950, configure your VMs appropriately'; break;;
+          [Nn]* ) echo 'MTU will remain default, it is recommened to set VM MTU to 1450';
+        esac
+      done
+    fi
 
     echo -e "IP Address: $ip_address\nNetmask: $ip_netmask\nGateway: $ip_gateway\nDNS: $dns_address\nMTU: ${MTU:-1500}\n"
     read -n 1 -p "Is this correct [y|n]" yn
@@ -261,22 +277,33 @@ echo "Fix install.sh script to include cobbler_server in all_in_one/lb_vxlan mod
 sed -e '/cobbler_server/d ' -i /root/puppet_openstack_builder/install-scripts/install.sh
 
 echo "Add VXLan configuration to default user.yaml for all_in_one/lb_vxlan"
-sed -e '/neutron::agents/a 
-openstack_release: icehouse
-vni_ranges:
- - 100:10000
-vxlan_group: 229.1.2.3
-flat_networks:
- - physnet1
-physical_interface_mappings:
- - physnet1:${external_interface}
-
-'
+sed -e '/neutron::agents/a \
+openstack_release: icehouse\
+vni_ranges:\
+ - 100:10000\
+vxlan_group: 229.1.2.3\
+flat_networks:\
+ - physnet1\
+physical_interface_mappings:\
+ - physnet1:\${external_interface}\
+' -i /root/puppet_openstack_builder/install-scripts/install.sh
 
 echo "Add VXLan+LinuxBridge module to puppet_openstack_builder and copy over modules"
+if [ ! -d /etc/puppet_openstack_builder/modules ] ;then
+  mkdir -p /etc/puppet_openstack_builder/modules
+fi
 tar xfz vxlan_lb.tgz -C /root/puppet_openstack_builder/modules/
+if [ ! "`grep builder\/modules /root/puppet_openstack_builder/install-scripts/install.sh`" ] ;then
 sed -e '/builder\/manifests/a cp -R ~\/puppet_openstack_builder\/modules \/etc\/puppet\/' \
   -i /root/puppet_openstack_builder/install-scripts/install.sh
+fi
+
 echo "It is recomended that you reboot and log in via the newly defined IP address: ${ip_address}"
+
+# Run all_in_one deployment?
+#if [ ! -z "${run_all_in_one}" ] ;then
+#  (cd /etc/puppet_openstack_builder/install-scripts; export external_interface=$external_interface; \
+#    export default_interface=$default_interface; ./install.sh)
+#fi
 
 # reboot
