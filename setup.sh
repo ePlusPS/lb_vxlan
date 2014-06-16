@@ -275,7 +275,7 @@ roles:
   all_in_one:
     classes:
       - coe::base
-       - "nova::%{rpc_type}"
+      - "nova::%{rpc_type}"
     class_groups:
       - build
       - glance_all
@@ -346,10 +346,8 @@ if [ ! -d /root/puppet_openstack_builder/modules ] ;then
 fi
 tar xfz vxlan_lb.tgz -C /root/puppet_openstack_builder/modules/
 
-if [ ! "`grep builder\/modules /root/puppet_openstack_builder/install-scripts/install.sh`" ] ;then
 sed -e '/builder\/manifests/a cp -R ~\/puppet_openstack_builder\/modules \/etc\/puppet\/' \
   -i /root/puppet_openstack_builder/install-scripts/install.sh
-fi
 
 echo "It is recomended that you reboot and log in via the newly defined IP address: ${ip_address}"
 
