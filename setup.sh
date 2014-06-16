@@ -178,7 +178,7 @@ if [ ! -z "${VLAN}" ] ;then
   if [ ! -z $initial_interface ] ;then
     sed -e '/gateway/d ' -i /etc/network/interfaces
     dns_search=`grep dns-search /etc/network/interfaces | awk '{print $2}'`
-    if [ -z "`ifconifg | grep $initial_interface | grep $VLAN`" ] ;then
+    if [ -z "`ifconfig | grep $initial_interface | grep $VLAN`" ] ;then
       vconfig add $initial_interface $VLAN
     fi
     cat >> /etc/network/interfaces <<EOF
