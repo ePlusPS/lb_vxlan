@@ -151,7 +151,7 @@ if [ ! -z "${VLAN}" ] ;then
       esac
     done
 
-    echo "IP Address: $ip_address, Netmask: $ip_netmask, Gateway: $ip_gateway, DNS: $dns_address"
+    echo -e "IP Address: $ip_address\nNetmask: $ip_netmask\nGateway: $ip_gateway\nDNS: $dns_address\nMTU: ${MTU:-1500}\n"
     read -n 1 -p "Is this correct [y|n]" yn
     case $yn in
       [Yy]* ) break;;
