@@ -5,7 +5,8 @@
 # 
 # Also, create a new scenario, and role mapping
 # for this enviornment
-
+exec > >(tee /var/log/lb_vxlan_build_setup.log)
+exec 2>&1
 set -o errexit
 
 usage() {
@@ -427,9 +428,9 @@ sed -e '/builder\/manifests/a cp -R ~\/puppet_openstack_builder\/modules \/etc\/
 echo "It is recomended that you reboot and log in via the newly defined IP address: ${ip_address}"
 
 # Run all_in_one deployment?
-#if [ ! -z "${run_all_in_one}" ] ;then
-#  (cd /etc/puppet_openstack_builder/install-scripts; export external_interface=$external_interface; \
-#    export default_interface=$default_interface; ./install.sh)
-#fi
+if [ ! -z "${run_all_in_one}" ] ;then
+  cd /etc/puppet_openstack_builder/install-scripts
+  /etc/puppet_openstack_builder/install-scripts/install.sh
+fi
 
 #reboot
