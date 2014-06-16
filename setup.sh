@@ -194,7 +194,7 @@ EOF
 
   if [ ! -z $MTU ]; then
     sed -e "/iface eth[0-9]/a \
-    mtu=${MTU}" -i /etc/network/interfaces
+    mtu ${MTU}" -i /etc/network/interfaces
   fi
 fi
 
