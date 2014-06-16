@@ -109,9 +109,9 @@ if ! run_cmd apt-get $APT_CONFIG install -qym git vlan vim; then
 fi
 
 echo "Enable 8021q module for VLAN config"
-if ! $(run_cmd echo 8021q >> /etc/modules ) || ! $(run_cmd modprobe 8021q) ; then
-  echo "Unable to install 8021q module"
-  exit 1
+if [ -z `grep 8021q /etc/modules` ] ;then 
+  echo 8021q >> /etc/modules
+  modprobe 8021q
 fi
 
 if [ ${VLAN} ] ; then
