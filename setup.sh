@@ -105,7 +105,7 @@ if [ -z "`grep 8021q /etc/modules`" ] ;then
   modprobe 8021q
 fi
 
-if [ ! -z "${VLAN}" ] ; then
+if [ ! -z "${VLAN}" ] ;then
   while true; do
     while true; do
       read -ep "Enter the VLAN:${VLAN} IPv4 Address: " ip_address
@@ -160,28 +160,26 @@ if [ ! -z "${VLAN}" ] ; then
   done
 
   initial_interface=`grep 'auto eth' /etc/network/interfaces | awk '{print $2}'`
-  if [ ! -z $initial_interface ]; then
+  if [ ! -z $initial_interface ] ;then
     sed -e '/gateway/d ' -i /etc/network/interfaces
     dns_search=`grep dns-search /etc/network/interfaces | awk '{print $2}'`
-    cat >> /etc/network/interfaces <<EOF
-
-auto $initial_interface
-iface $initial_interface.$VLAN inet static
-  address $ip_address
-  netmask $ip_netmask
-  gateway $ip_gateway
-  dns-nameservers $dns_address
-  dns-search $dns_search
-EOF
     vconfig add $initial_interface $VLAN
-  fi  
+    cat >> /etc/network/interfaces <<EOF
+    auto $initial_interface.$VLAN
+    iface $initial_interface.$VLAN inet static
+    address $ip_address
+    netmask $ip_netmask
+    gateway $ip_gateway
+    dns-nameserver $dns_server
+    dns-search $dns_search
+EOF
+  fi
 
   if [ ! -z $MTU ]; then
-    sed -e '/iface eth[0-9]/a "  mtu=$MTU"' -i /etc/network/interfaces   
-
-  echo "NOTE: You should reboot and log in on: $ip_address before proceeding"
+    sed -e '/iface eth[0-9]/a "  mtu=$MTU"' -i /etc/network/interfaces
+    echo "NOTE: You should reboot and log in on: $ip_address before proceeding"
+  fi
 fi
-
 
 # Git clone puppet_openstack_builder from cisco
 echo "Cloning puppet_openstack_builder branch from CiscoSystems github.com..."
