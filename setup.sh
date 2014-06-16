@@ -23,6 +23,8 @@ OPTIONS:
 -g {gateway}        vlan interface gateway
 -d {dns}            vlan interface dns ip
 -t {ntp}            ntp server address
+-D {default_int}    default interface (usually eth0)
+-E {external_int}   external interface (usually eth1)
 EOF
 }
 export -f usage
@@ -78,7 +80,7 @@ function valid_ip()
 export valid_ip
 
 # parse CLI options
-while getopts "hmrp:v:i:n:g:d:t:" OPTION
+while getopts "hmrp:v:i:n:g:d:t:D:E:" OPTION
 do
   case $OPTION in
     h)
@@ -114,6 +116,13 @@ do
       ;;
     t)
       export ntp_address=$OPTARG
+      ;;
+    D)
+      export default_interface=$OPTARG
+      ;;
+    E)
+      export externa_interface=$OPTARG
+      ;;
   esac
 done
 
@@ -231,10 +240,12 @@ EOF
   if [ ! -z "$MTU" ]; then
     sed -e "/iface eth[0-9]/a \ \ mtu ${MTU}" -i /etc/network/interfaces
   fi
-
-  default_interface=$initial_interface.$VLAN
-  external_interface=$initial_interface
-
+  if [ ! -z "${default_interface}" ]; then
+    default_interface=$initial_interface.$VLAN
+  fi
+  if [ ! -z "${external_interface}" ]; then
+    external_interface=$initial_interface
+  fi
 fi
 
 # Git clone puppet_openstack_builder from cisco
@@ -326,13 +337,18 @@ EOF
 echo "Fix install.sh script to include cobbler_server in all_in_one/lb_vxlan model"
 sed -e '/cobbler_server/d ' -i /root/puppet_openstack_builder/install-scripts/install.sh
 
+if [ ! -z ${default_interface} ] ;then
 echo "Setting default interface (management interface) to $default_interface"
-echo "Setting external interface (VLAN trunk) to $external_interface"
 
 sed -e "s/default_interface:-eth0/default_interface:-${default_interface}/" \
   -i /root/puppet_openstack_builder/install-scripts/install.sh
+fi
+if [ ! -z ${external_interface} ] ;then
+echo "Setting external interface (VLAN trunk) to $external_interface"
 sed -e "s/external_interface:-eth1/external_interface:-${external_interface}/" \
   -i /root/puppet_openstack_builder/install-scripts/install.sh
+fi
+
 if [ ! -z "${ntp_address}" ] ;then
 sed -e "s/pool.ntp.org/${ntp_address}/" \
   -i /root/puppet_openstack_builder/install-scripts/install.sh
