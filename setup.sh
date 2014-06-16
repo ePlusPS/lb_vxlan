@@ -193,9 +193,12 @@ EOF
   fi
 
   if [ ! -z $MTU ]; then
-    sed -e "/iface eth[0-9]/a \
-    mtu ${MTU}" -i /etc/network/interfaces
+    sed -e "/iface eth[0-9]/a \ \ mtu ${MTU}" -i /etc/network/interfaces
   fi
+
+  default_interface=$initial_interface.$VLAN
+  external_interface=$initial_interface
+
 fi
 
 # Git clone puppet_openstack_builder from cisco
@@ -276,6 +279,14 @@ EOF
 
 echo "Fix install.sh script to include cobbler_server in all_in_one/lb_vxlan model"
 sed -e '/cobbler_server/d ' -i /root/puppet_openstack_builder/install-scripts/install.sh
+
+echo "Setting default interface (management interface) to $default_interface"
+echo "Setting external interface (VLAN trunk) to $external_interface"
+
+sed -e "s/default_interface:-eth0/default_interface:-${default_interface}/" \
+  -i /root/puppet_openstack_builder/install-scripts/install.sh
+sed -e "s/external_interface:-eth1/external_interface:-${external_interface}/" \
+  -i /root/puppet_openstack_builder/install-scripts/install.sh
 
 echo "Add VXLan configuration to default user.yaml for all_in_one/lb_vxlan"
 sed -e '/neutron::agents/a \
