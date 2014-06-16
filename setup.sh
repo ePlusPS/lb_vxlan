@@ -272,7 +272,7 @@ cat > /root/puppet_openstack_builder/data/scenarios/all_in_one.yaml <<EOF
 # scenario for lb_vxlan
 #
 roles:
-  :
+  all_in_one:
     classes:
       - coe::base
        - "nova::%{rpc_type}"
