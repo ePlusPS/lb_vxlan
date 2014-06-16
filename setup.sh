@@ -367,14 +367,15 @@ if [ ! -z "${MTU}" ] ;then
 
   cat > /root/puppet_openstack_builder/install-scripts/fix_mtu.sh <<EOF
 #!/bin/bash
-
-sed -e "/DEFAULT\/dhcp_agents/a 'DEFAULT/network_device_mtu':      value => \$network_device_mtu;" \\
+sed -e "/DEFAULT\/dhcp_agents/a \ \ \ \ 'DEFAULT/network_device_mtu':      value => \$network_device_mtu;" \
   -i /usr/share/puppet/modules/neutron/manifests/init.pp
-sed -e "/\$dhcp_agents_per_network/a \$network_device_mtu          = 'None',"\\
+sed -e "/\$dhcp_agents_per_network.*=/a \ \ \$network_device_mtu          = 'None',"\
   -i /usr/share/puppet/modules/neutron/manifests/init.pp
 EOF
+
   chmod +x /root/puppet_openstack_builder/install-scripts/fix_mtu.sh
-  sed -e '/puppet plugin/a ./fix_mtu.sh' -i /root/puppet_openstack_builder/install-scripts/install.sh
+  sed -e '/puppet plugin/a /root/puppet_openstack_builder/install-scripts/fix_mtu.sh' \
+  -i /root/puppet_openstack_builder/install-scripts/install.sh
 fi
 
 echo "Add VXLan+LinuxBridge module to puppet_openstack_builder and copy over modules"
@@ -394,4 +395,4 @@ echo "It is recomended that you reboot and log in via the newly defined IP addre
 #    export default_interface=$default_interface; ./install.sh)
 #fi
 
-# reboot
+#reboot
