@@ -344,6 +344,22 @@ neutron::agents::linuxbridge::physical_interface_mappings:\
  - physnet1:\${external_interface}\
 ' -i /root/puppet_openstack_builder/install-scripts/install.sh
 
+if [ ! -z "${MTU}" ] ;then
+  sed -e "/openstack_release/a neutron::network_device_mtu=${MTU}" \
+    -i /root/puppet_openstack_builder/install-scripts/install.sh
+
+  cat > /root/puppet_openstack_builder/install-scripts/fix_mtu.sh <<EOF
+#!/bin/bash
+
+sed -e "/DEFAULT\/dhcp_agents/a 'DEFAULT/network_device_mtu':      value => \$network_device_mtu;" \\
+  -i /usr/share/puppet/modules/neutron/manifests/init.pp
+sed -e "/\$dhcp_agents_per_network/a \$network_device_mtu          = 'None',"\\
+  -i /usr/share/puppet/modules/neutron/manifests/init.pp
+EOF
+  chmod +x /root/puppet_openstack_builder/install-scripts/fix_mtu.sh
+  sed -e '/puppet plugin/a ./fix_mtu.sh' -i /root/puppet_openstack_builder/install-scripts/install.sh
+fi
+
 echo "Add VXLan+LinuxBridge module to puppet_openstack_builder and copy over modules"
 if [ ! -d /root/puppet_openstack_builder/modules ] ;then
   mkdir -p /root/puppet_openstack_builder/modules
