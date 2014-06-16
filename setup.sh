@@ -18,9 +18,20 @@ OPTIONS:
 -v {vlan}           single interface vlan to enable
 -m                  set 8950 MTU
 -r                  run install.sh for all_in_one/lb_vxlan use case
+-i {ipaddress}      vlan interface ip address
+-n {netmask}        vlan interfac netmask
+-g {gateway}        vlan interface gateway
+-d {dns}            vlan interface dns ip
+-t {ntp}            ntp server address
 EOF
 }
 export -f usage
+
+if [ "$(id -u)" != "0" ]; then
+    echo "This script must be run as root or with sudo"
+    usage
+    exit 1
+fi
 
 
 # wrapper all commands with sudo in case this is not run as root
@@ -67,7 +78,7 @@ function valid_ip()
 export valid_ip
 
 # parse CLI options
-while getopts "hmrp:v:i:n:g:d:" OPTION
+while getopts "hmrp:v:i:n:g:d:t:" OPTION
 do
   case $OPTION in
     h)
@@ -89,6 +100,20 @@ do
     r)
       export run_all_in_one=true
       ;;
+    i)
+      export ip_address=$OPTARG
+      ;;
+    n)
+      export ip_netmask=$OPTARG
+      ;;
+    g)
+      export ip_gateway=$OPTARG
+      ;;
+    d)
+      export dns_address=$OPTARG
+      ;;
+    t)
+      export ntp_address=$OPTARG
   esac
 done
 
@@ -111,7 +136,6 @@ if ! run_cmd apt-get $APT_CONFIG install -qym git vlan vim; then
   exit 1
 fi
 
-
 echo "Enable 8021q module for VLAN config"
 if [ -z "`grep 8021q /etc/modules`" ] ;then 
   echo 8021q >> /etc/modules
@@ -120,43 +144,51 @@ fi
 
 if [ ! -z "${VLAN}" ] ;then
   while true; do
-    while true; do
-      read -ep "Enter the VLAN:${VLAN} IPv4 Address: " ip_address
-      if ! valid_ip $ip_address ; then
-        echo "That's not an IP address"
-      else
-        break
-      fi
-    done
+    if [ -z "$ip_address" ] ;then
+      while true; do
+        read -ep "Enter the VLAN:${VLAN} IPv4 Address: " ip_address
+        if ! valid_ip $ip_address ; then
+          echo "That's not an IP address"
+        else
+          break
+        fi
+      done
+    fi
 
-    while true; do
-      read -ep "Enter the VLAN:${VLAN} Netmask: " ip_netmask
-      if ! valid_ip $ip_netmask ; then
-        echo "That's not a valid IPv4 Netmask"
-      else
-        break
-      fi
-    done
+    if [ -z "$ip_netmask" ] ;then
+      while true; do
+        read -ep "Enter the VLAN:${VLAN} Netmask: " ip_netmask
+        if ! valid_ip $ip_netmask ; then
+          echo "That's not a valid IPv4 Netmask"
+        else
+          break
+        fi
+      done
+    fi
 
-    while true; do
-      read -ep "Enter the VLAN:${VLAN} IPv4 Gateway: " ip_gateway
-      if ! valid_ip $ip_gateway ; then
-        echo "That's not a valid IPv4 address"
-      else
-        break
-      fi
-    done
+    if [ -z "$ip_gateway" ] ;then
+      while true; do
+        read -ep "Enter the VLAN:${VLAN} IPv4 Gateway: " ip_gateway
+        if ! valid_ip $ip_gateway ; then
+          echo "That's not a valid IPv4 address"
+        else
+          break
+        fi
+      done
+    fi
 
-    while true; do
-      read -ep "Enter the initial VLAN:${VLAN} DNS Server IP Address: " dns_address
-      if ! valid_ip $dns_address ; then
-        echo "That's not a valid IPv4 address"
-      else
-        break
-      fi
-    done
+    if [ -z "$dns_address" ] ;then
+      while true; do
+        read -ep "Enter the initial VLAN:${VLAN} DNS Server IP Address: " dns_address
+        if ! valid_ip $dns_address ; then
+          echo "That's not a valid IPv4 address"
+        else
+          break
+        fi
+      done
+    fi
 
-    if [ ! "${MTU}" ] ;then
+    if [ -z "${MTU}" ] ;then
       while true; do
         read -n 1 -p "Do you want 9K MTU? [y|n]" yn
         case $yn in
@@ -192,7 +224,7 @@ iface $initial_interface.$VLAN inet static
 EOF
   fi
 
-  if [ ! -z $MTU ]; then
+  if [ ! -z "$MTU" ]; then
     sed -e "/iface eth[0-9]/a \ \ mtu ${MTU}" -i /etc/network/interfaces
   fi
 
@@ -287,6 +319,10 @@ sed -e "s/default_interface:-eth0/default_interface:-${default_interface}/" \
   -i /root/puppet_openstack_builder/install-scripts/install.sh
 sed -e "s/external_interface:-eth1/external_interface:-${external_interface}/" \
   -i /root/puppet_openstack_builder/install-scripts/install.sh
+if [ ! -z "$ntp_address" ] ;then
+sed -e "s/pool.ntp.org/${ntp_address}/" \
+  -i /root/puppet_openstack_builder/install-scripts/install.sh
+fi
 
 echo "Add VXLan configuration to default user.yaml for all_in_one/lb_vxlan"
 sed -e '/neutron::agents/a \
