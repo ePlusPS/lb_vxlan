@@ -92,15 +92,6 @@ if ! run_cmd apt-get $APT_CONFIG update; then
   exit 1
 fi
 
-
-
-# Make sure the apt repository list is up to date
-echo -e "\n\nUpdate apt repository...\n\n"
-if ! run_cmd apt-get $APT_CONFIG update; then
-  echo "Can't update apt repository"
-  exit 1
-fi
-
 # Install prerequisite packages
 echo "Installing prerequisite apps: git, vlan, vim..."
 if ! run_cmd apt-get $APT_CONFIG install -qym git vlan vim; then
@@ -109,12 +100,12 @@ if ! run_cmd apt-get $APT_CONFIG install -qym git vlan vim; then
 fi
 
 echo "Enable 8021q module for VLAN config"
-if [ -z `grep 8021q /etc/modules` ] ;then 
+if [ -z "`grep 8021q /etc/modules`" ] ;then 
   echo 8021q >> /etc/modules
   modprobe 8021q
 fi
 
-if [ ${VLAN} ] ; then
+if [ ! -z "${VLAN}" ] ; then
   while true; do
     while true; do
       read -ep "Enter the VLAN:${VLAN} IPv4 Address: " ip_address
@@ -158,7 +149,7 @@ if [ ${VLAN} ] ; then
         [Yy]* ) MTU=9000; echo 'MTU will be set to 8950, configure your VMs appropriately'; break;;
         [Nn]* ) echo 'MTU will remain default, it is recommened to set VM MTU to 1450';
       esac
-
+    done
 
     echo "IP Address: $ip_address, Netmask: $ip_netmask, Gateway: $ip_gateway, DNS: $dns_address"
     read -n 1 -p "Is this correct [y|n]" yn
