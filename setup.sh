@@ -7,6 +7,7 @@
 # for this enviornment
 
 set -o errexit
+set -x
 
 usage() {
 cat <<EOF
@@ -216,10 +217,10 @@ EOF
 
 # create scenario for lb_vxlan with no l3
 if [ -f /root/puppet_openstack_builder/data/scenarios/all_in_one.yaml.orig ]; then
-  echo "You've run this script already, please just run: \
-puppet apply -v /etc/pupppet/manifests/site.pp"
+  echo -e "You've run this script already, please just run: \n  puppet apply -v /etc/pupppet/manifests/site.pp"
   exit 1
 fi
+
 cp /root/puppet_openstack_builder/data/scenarios/all_in_one.yaml{,.orig}
 cat > /root/puppet_openstack_builder/data/scenarios/all_in_one.yaml <<EOF
 #
