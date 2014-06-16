@@ -205,6 +205,8 @@ if [ ! -z "${VLAN}" ] ;then
         [Yy]* ) break;;
         [Nn]* ) echo "Try again."
       esac
+    else
+      break
     fi
   done
 
