@@ -366,6 +366,10 @@ echo "Add VXLan configuration to default user.yaml for all_in_one/lb_vxlan"
 sed -e '/neutron::agents/a \
 openstack_release: icehouse\
 service_plugins: \
+horizon_neutron_options: \
+enable_lbaas: false\
+enable_fwaas: false\
+enable_vpnaas: false\
 vni_ranges:\
  - 100:10000\
 vxlan_group: 229.1.2.3\
@@ -388,7 +392,6 @@ EOF
 
 echo "Remove network::agents plugin from nova_compute.yaml classgroup"
 sed -e '/agents/d ' -i /root/puppet_openstack_builder/data/class_groups/nova_compute.yaml
-
 
 sed -e 's/network_plugin:.*/network_plugin: ml2_lb_vxlan/' \
   -i /root/puppet_openstack_builder/data/global_hiera_params/common.yaml
