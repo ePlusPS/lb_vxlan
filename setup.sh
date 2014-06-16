@@ -328,6 +328,8 @@ sed -e "s/pool.ntp.org/${ntp_address}/" \
   -i /root/puppet_openstack_builder/install-scripts/install.sh
 fi
 
+sed -e 's/ovs/linuxbridge/' -i /root/puppet_openstack_builder/data/global_hiera_params/common.yaml
+
 echo "Add VXLan configuration to default user.yaml for all_in_one/lb_vxlan"
 sed -e '/neutron::agents/a \
 openstack_release: icehouse\
@@ -337,6 +339,8 @@ vxlan_group: 229.1.2.3\
 flat_networks:\
  - physnet1\
 physical_interface_mappings:\
+ - physnet1:\${external_interface}\
+neutron::agents::linuxbridge::physical_interface_mappings:\
  - physnet1:\${external_interface}\
 ' -i /root/puppet_openstack_builder/install-scripts/install.sh
 
