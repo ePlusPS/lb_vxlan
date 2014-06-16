@@ -348,12 +348,9 @@ echo "Setup Ml2_plugin network_plugin yaml"
 cat > /root/puppet_openstack_builder/data/hiera_data/network_plugin/ml2_lb_vxlan.yaml <<EOF
 neutron::core_plugin: neutron.plugins.ml2.plugin.Ml2Plugin
 
-nova::compute::neutron::libvirt_vif_driver: "nova.virt.libvirt.vif.LibvirtGeneri
-cVIFDriver"
-neutron::agents::l3::interface_driver: neutron.agent.linux.interface.BridgeInter
-faceDriver
-neutron::agents::dhcp::interface_driver: neutron.agent.linux.interface.BridgeInt
-erfaceDriver
+nova::compute::neutron::libvirt_vif_driver: nova.virt.libvirt.vif.LibvirtGenericVIFDriver
+neutron::agents::l3::interface_driver: neutron.agent.linux.interface.BridgeInterfaceDriver
+neutron::agents::dhcp::interface_driver: neutron.agent.linux.interface.BridgeInterfaceDriver
 EOF
 
 sed -e 's/network_plugin:.*/network_plugin: ml2_lb_vxlan/' \
@@ -367,9 +364,9 @@ if [ ! -z "${MTU}" ] ;then
 
   cat > /root/puppet_openstack_builder/install-scripts/fix_mtu.sh <<EOF
 #!/bin/bash
-sed -e "/DEFAULT\/dhcp_agents/a \ \ \ \ 'DEFAULT/network_device_mtu':      value => \$network_device_mtu;" \
+sed -e '/DEFAULT\/dhcp_agents/a \ \ \ \ \'DEFAULT/network_device_mtu\':      value => \$network_device_mtu;' \
   -i /usr/share/puppet/modules/neutron/manifests/init.pp
-sed -e "/\$dhcp_agents_per_network.*=/a \ \ \$network_device_mtu          = 'None',"\
+sed -e '/\$dhcp_agents_per_network.*=/a \ \ \$network_device_mtu          = "None",'\
   -i /usr/share/puppet/modules/neutron/manifests/init.pp
 EOF
 
