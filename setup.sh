@@ -84,7 +84,7 @@ do
       export vlan=$VLAN
       ;;
     m)
-       export MTU=9000
+      export MTU=9000
       ;;
     r)
       export run_all_in_one=true
@@ -92,9 +92,9 @@ do
   esac
 done
 
-if [ ${ARGV} eq "0" ] ;then
-  usage()
-  exit1
+if [ $# -eq 0 ] ;then
+  usage
+  exit 1
 fi
 
 # Make sure the apt repository list is up to date
