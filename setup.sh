@@ -67,7 +67,7 @@ function valid_ip()
 export valid_ip
 
 # parse CLI options
-while getopts "hmrp:v:" OPTION
+while getopts "hmrp:v:i:n:g:d:" OPTION
 do
   case $OPTION in
     h)
@@ -187,7 +187,7 @@ iface $initial_interface.$VLAN inet static
   address $ip_address
   netmask $ip_netmask
   gateway $ip_gateway
-  dns-nameserver $dns_server
+  dns-nameserver $dns_address
   dns-search $dns_search
 EOF
   fi
