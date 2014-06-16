@@ -266,5 +266,6 @@ classes:
   - vxlan_lb::ml2
 EOF
 
+echo "It is recomended that you reboot and log in via the newly defined IP address: ${ip_address}"
 
 # reboot
