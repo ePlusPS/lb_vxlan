@@ -12,24 +12,6 @@ EOF
 }
 export -f usage
 
-# parse CLI options
-while getopts "hcd" OPTION
-do
-  case $OPTION in
-    h)
-      usage
-      exit 1
-      ;;
-    c)
-	  create
-	  exit 0
-	  ;;
-	d)
-	  delete
-	  exit 0
-	  ;;
-  esac
-done
 
 # Grab the openstack credentials
 source ~/openrc
@@ -96,5 +78,26 @@ glance image-delete trusty
 if [ $? ] ; then echo Deleted trusty; fi
 
 }
+
+export delete
+
+# parse CLI options
+while getopts "hcd" OPTION
+do
+  case $OPTION in
+    h)
+      usage
+      exit 1
+      ;;
+    c)
+	  create
+	  exit 0
+	  ;;
+	d)
+	  delete
+	  exit 0
+	  ;;
+  esac
+done
 
 

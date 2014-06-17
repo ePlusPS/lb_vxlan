@@ -248,9 +248,15 @@ EOF
   fi
   if [ ! -z "${default_interface}" ]; then
     default_interface=$initial_interface.$VLAN
+  else
+    default_interface='eth0'
+    echo "Setting default interface to eth0, should it be something else?  pass it with -D "
   fi
   if [ ! -z "${external_interface}" ]; then
     external_interface=$initial_interface
+  else
+    external_interface='eth1'
+    echo "Setting external interface to eth1, should it be something else?  pass it with -E "
   fi
 fi
 
