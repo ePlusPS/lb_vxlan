@@ -25,9 +25,9 @@ already configured in the OS (e.g. dhcp or static configurations) with:
 - ntp.esl.cisco.com for ntp
 - Jumbo MTU (ends up at 8950 or less bytes at the VM with VXLan configured)
 
-  git clone https://github.com/onecloud/lb_vxlan
-  cd lb_vxlan
-  ./setup -m -t ntp.esl.cisco.com -D eth0 -E eth1
+  git clone https://github.com/onecloud/lb\_vxlan
+  cd lb\_vxlan
+  ./setup -m -t ntp.esl.cisco.com -D eth0 -E eth1 -r
 
 If you want to move a single interface to a VLAN for management (likely so that
 you can use the un-tagged interface to pass tagged packets from your VMs), you
