@@ -436,8 +436,8 @@ echo "It is recomended that you reboot and log in via the newly defined IP addre
 
 # Run all_in_one deployment?
 if [ ! -z "${run_all_in_one}" ] ;then
-  cd /etc/puppet_openstack_builder/install-scripts
-  /etc/puppet_openstack_builder/install-scripts/install.sh
+  cd /root/puppet_openstack_builder/install-scripts
+  /root/puppet_openstack_builder/install-scripts/install.sh
 fi
 
 #reboot
