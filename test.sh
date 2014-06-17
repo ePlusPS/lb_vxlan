@@ -1,26 +1,13 @@
 #!/bin/bash
 
-usage() {
-cat <<EOF
-usage: $0 options
-
-OPTIONS:
--h                  Show this message
--c 					Create test environment
--d 					Delete test environment
-EOF
-}
-export -f usage
-
 
 # Grab the openstack credentials
 source ~/openrc
 
-create() {
-	if [ ! -z "`glance image-list | grep trusty`"] ;then
-		glance image-create --name=trusty --disk-format=qcow2 --container-format=bare --is-public=true \
-		--location=https://cloud-images.ubuntu.com/trusty/current/trusty-server-cloudimg-amd64-disk1.img \
-	fi
+if [ ! -z "`glance image-list | grep trusty`"] ;then
+glance image-create --name=trusty --disk-format=qcow2 --container-format=bare --is-public=true \
+--location=https://cloud-images.ubuntu.com/trusty/current/trusty-server-cloudimg-amd64-disk1.img \
+fi
 
  
 # Create user data if it doesn't exist
@@ -60,41 +47,3 @@ nova boot --flavor 2 --image trusty --nic net-id=`neutron net-list | awk '/ shar
 nova boot --flavor 2 --image trusty --nic net-id=`neutron net-list | awk '/ sharednet1 / {print $2}'` \
   --nic net-id=`neutron net-list | awk '/ tenantnet1 / {print $2}'` --key-name root \
   --user-data ~/user.data vxb
-}
-export -f create
-
-delete() {
-nova delete vxa
-if [ $? ] ; then echo Deleted vxa; fi
-nova delete vxb
-if [ $? ] ; then echo Deleted vxb; fi
-
-neutron net-delete sharednet1
-
-neutron net-delete tenantnet1
-
-glance image-delete trusty
-if [ $? ] ; then echo Deleted trusty; fi
-}
-export -f delete
-
-# parse CLI options
-while getopts "hcd" OPTION
-do
-  case $OPTION in
-    h)
-      usage
-      exit 1
-      ;;
-    c)
-	  create
-	  exit 0
-	  ;;
-	d)
-	  delete
-	  exit 0
-	  ;;
-  esac
-done
-
-
