@@ -1,5 +1,5 @@
 #!/bin/bash
-# grab the puppet_openstack_builder code
+#] grab the puppet_openstack_builder code
 # and update it if it doesn't have the right
 # elements already defined for VLAN/VXLan/LB
 # 
@@ -393,7 +393,7 @@ EOF
 
 echo "Remove network::agents plugin from nova_compute.yaml classgroup"
 sed -e '/agents/d ' -i /root/puppet_openstack_builder/data/class_groups/nova_compute.yaml
-sed -e '/"%{network_service/a \ - vxlan_lb::ml2_agent' \
+sed -e '/"%{network_service/a \ \ - vxlan_lb::ml2_agent' \
 -i /root/puppet_openstack_builder/data/class_groups/nova_compute.yaml
 sed -e '/nova::newtork/d ' -i /root/puppet_openstack_builder/data/class_groups/nova_controller.yaml
 
