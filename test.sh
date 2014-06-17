@@ -4,9 +4,9 @@
 # Grab the openstack credentials
 source ~/openrc
 
-if [ ! -z "`glance image-list | grep trusty`"] ;then
+if [ -z "`glance image-list | grep trusty`"] ;then
 glance image-create --name=trusty --disk-format=qcow2 --container-format=bare --is-public=true \
---location=https://cloud-images.ubuntu.com/trusty/current/trusty-server-cloudimg-amd64-disk1.img \
+--location=https://cloud-images.ubuntu.com/trusty/current/trusty-server-cloudimg-amd64-disk1.img
 fi
 
  
@@ -24,7 +24,7 @@ ifconfig eth0.144 10.0.144.\$ip_host netmask 255.255.255.0 mtu 8950 up
 EOF
 fi
 
-if [ ! -z "`nova keypair-list | grep root`"] ;then
+if [ -z "`nova keypair-list | grep root`"] ;then
 	ssh-keygen -t rsa -f ~/.ssh/id_rsa -N ''
 	nova keypair-add --pub-key ~/.ssh/id_rsa.pub root
 fi
