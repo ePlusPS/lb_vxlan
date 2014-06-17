@@ -380,6 +380,7 @@ physical_interface_mappings:\
  - physnet1:\${external_interface}\
 neutron::agents::linuxbridge::physical_interface_mappings:\
  - physnet1:\${external_interface}\
+neutron::plugins::ml2::enable_security_group: true\
 ' -i /root/puppet_openstack_builder/install-scripts/install.sh
 
 echo "Setup Ml2_plugin network_plugin yaml"
