@@ -435,10 +435,12 @@ if [ ! -z "${MTU}" ] ;then
 
   cat > /root/puppet_openstack_builder/install-scripts/fix_mtu.sh <<EOF
 #!/bin/bash
-sed -e '/DEFAULT\/dhcp_agents/a \ \ \ \ "DEFAULT/network_device_mtu":      value => \$network_device_mtu;' \
-  -i /usr/share/puppet/modules/neutron/manifests/init.pp
-sed -e '/\$dhcp_agents_per_network.*=/a \ \ \$network_device_mtu          = "None",'\
-  -i /usr/share/puppet/modules/neutron/manifests/init.pp
+if [ ! -z "`grep network_device_mtu /usr/share/puppet/modules/neutron/manifests/init.pp`"]
+  sed -e '/DEFAULT\/dhcp_agents/a \ \ \ \ "DEFAULT/network_device_mtu":      value => \$network_device_mtu;' \
+    -i /usr/share/puppet/modules/neutron/manifests/init.pp
+  sed -e '/\$dhcp_agents_per_network.*=/a \ \ \$network_device_mtu          = "None",'\
+    -i /usr/share/puppet/modules/neutron/manifests/init.pp
+fi
 EOF
 
   chmod +x /root/puppet_openstack_builder/install-scripts/fix_mtu.sh
