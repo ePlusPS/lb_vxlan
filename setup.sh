@@ -391,6 +391,24 @@ neutron::agents::l3::interface_driver: neutron.agent.linux.interface.BridgeInter
 neutron::agents::dhcp::interface_driver: neutron.agent.linux.interface.BridgeInterfaceDriver
 EOF
 
+cat > /root/puppet_openstack_builder/data/data_mappings/tenant_network_type/vxlan.yaml <<EOF
+external_interface:
+ - vxlan_lb::ml2_agent::external_interface
+internal_ip:
+ - vxlan_lb::ml2::local_ip
+ - vxlan_lb::ml2_agent::local_ip
+vni_ranges:
+ - vxlan_lb::ml2::vni_ranges
+ - vxlan_lb::ml2_agent::vni_ranges
+vxlan_group:
+ - vxlan_lb::ml2::vxlan_group
+ - vxlan_lb::ml2_agent::vxlan_group
+flat_networks:
+ - vxlan_lb::ml2::flat_networks
+physical_interface_mappings:
+ - vxlan_lb::ml2_agent::physical_interface_mappings
+EOF
+
 echo "Remove network::agents plugin from nova_compute.yaml classgroup"
 sed -e '/agents/d ' -i /root/puppet_openstack_builder/data/class_groups/nova_compute.yaml
 sed -e '/"%{network_service/a \ \ - vxlan_lb::ml2_agent' \
