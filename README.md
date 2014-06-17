@@ -37,3 +37,15 @@ might use:
 
 Note that the sytem will assume eth0, and add an eth0.XXX interface, and make
 eth0 the default.
+
+There is a test script that will try to create a flat network, and a set of VMs
+along with a vxlan based tenant network:
+
+  ./test.sh
+
+And there is a reset script to clean up most of the system (doesn't delete the 
+ssh key)
+
+  ./reset_test.sh
+
+
