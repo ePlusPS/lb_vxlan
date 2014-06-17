@@ -333,11 +333,11 @@ classes:
   - "%{network_service}::server::notifications"
   - "%{network_service}::config"
   - "%{network_service}::agents::metadata"
-  - "%{network_service}::agents::l3"
-  - "%{network_service}::agents::lbaas"
-  - "%{network_service}::agents::vpnaas"
+  #- "%{network_service}::agents::l3"
+  #- "%{network_service}::agents::lbaas"
+  #- "%{network_service}::agents::vpnaas"
   - "%{network_service}::agents::dhcp"
-  - "%{network_service}::services::fwaas"
+  #- "%{network_service}::services::fwaas"
   - vxlan_lb::ml2
 EOF
 
@@ -393,8 +393,15 @@ EOF
 
 echo "Remove network::agents plugin from nova_compute.yaml classgroup"
 sed -e '/agents/d ' -i /root/puppet_openstack_builder/data/class_groups/nova_compute.yaml
+sed -e '/"%{network_service/a \ - vxlan_lb::ml2_agent' \
+-i /root/puppet_openstack_builder/data/class_groups/nova_compute.yaml
+sed -e '/nova::newtork/d ' -i /root/puppet_openstack_builder/data/class_groups/nova_controller.yaml
 
-sed -e 's/network_plugin:.*/network_plugin: ml2_lb_vxlan/' \
+echo "Remove collectd and graphite"
+sed -e '/collectd/d ' -i /root/puppet_openstack_builder/data/class_groups/build.yaml
+sed -e '/graphite/d ' -i /root/puppet_openstack_builder/data/class_groups/build.yaml
+
+sed -e '/network_plugin:.*/d ' \
   -i /root/puppet_openstack_builder/data/global_hiera_params/common.yaml
 sed -e 's/tenant_network_type: .*/tenant_network_type: vxlan/' \
   -i /root/puppet_openstack_builder/data/global_hiera_params/common.yaml
