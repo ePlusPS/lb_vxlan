@@ -3,6 +3,8 @@
 # Grab the openstack credentials
 source ~/openrc
 
+glance image-create --name trusty --disk-format qcow2 --container-format bare --location \
+ https://cloud-images.ubuntu.com/trusty/current/trusty-server-cloudimg-amd64-disk1.img --is-public --progress 
 # Create user data if it doesn't exist
 if [ -z ~/user.data ]; then
 cat > ~/user.data <<EOF
