@@ -60,9 +60,8 @@ nova boot --flavor 2 --image trusty --nic net-id=`neutron net-list | awk '/ shar
 nova boot --flavor 2 --image trusty --nic net-id=`neutron net-list | awk '/ sharednet1 / {print $2}'` \
   --nic net-id=`neutron net-list | awk '/ tenantnet1 / {print $2}'` --key-name root \
   --user-data ~/user.data vxb
-
 }
-export create
+export -f create
 
 delete() {
 nova delete vxa
@@ -76,10 +75,8 @@ neutron net-delete tenantnet1
 
 glance image-delete trusty
 if [ $? ] ; then echo Deleted trusty; fi
-
 }
-
-export delete
+export -f delete
 
 # parse CLI options
 while getopts "hcd" OPTION
