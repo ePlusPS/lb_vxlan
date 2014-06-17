@@ -290,9 +290,8 @@ EOF
 fi
 
 # add ml2 parameters
-cat >> /root/puppet_openstack_builder/data/hiera_data/user.common.yaml <<EOF
-neutron::server::disableml2: false
-EOF
+sed -e 's/disableml2: .*/disableml2: false/' \
+-i /root/puppet_openstack_builder/data/hiera_data/user.common.yaml
 
 # create scenario for lb_vxlan with no l3
 if [ -f /root/puppet_openstack_builder/data/scenarios/all_in_one.yaml.orig ]; then
@@ -386,7 +385,6 @@ physical_interface_mappings:\
  - physnet1:\${external_interface}\
 neutron::agents::linuxbridge::physical_interface_mappings:\
  - physnet1:\${external_interface}\
-neutron::plugins::ml2::enable_security_group: true\
 ' -i /root/puppet_openstack_builder/install-scripts/install.sh
 
 echo "Setup Ml2_plugin network_plugin yaml"
