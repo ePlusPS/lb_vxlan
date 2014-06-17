@@ -8,7 +8,7 @@ glance image-create --name=trusty --disk-format=qcow2 --container-format=bare \
 --is-public=true
  
 # Create user data if it doesn't exist
-if [ -z ~/user.data ]; then
+if [ ! -d ~/user.data ]; then
 cat > ~/user.data <<EOF
 #!/bin/bash
 
