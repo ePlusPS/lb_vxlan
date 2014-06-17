@@ -419,7 +419,7 @@ echo "Remove collectd and graphite"
 sed -e '/collectd/d ' -i /root/puppet_openstack_builder/data/class_groups/build.yaml
 sed -e '/graphite/d ' -i /root/puppet_openstack_builder/data/class_groups/build.yaml
 
-sed -e '/network_plugin:.*/d ' \
+sed -e 's/network_plugin: .*/network_plugin: ml2_lb_vxlan/' \
   -i /root/puppet_openstack_builder/data/global_hiera_params/common.yaml
 sed -e 's/tenant_network_type: .*/tenant_network_type: vxlan/' \
   -i /root/puppet_openstack_builder/data/global_hiera_params/common.yaml
@@ -457,5 +457,6 @@ if [ ! -z "${run_all_in_one}" ] ;then
   cd /root/puppet_openstack_builder/install-scripts
   /root/puppet_openstack_builder/install-scripts/install.sh
 fi
+
 
 #reboot
