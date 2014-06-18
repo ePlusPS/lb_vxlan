@@ -355,10 +355,22 @@ echo "Setting default interface (management interface) to $default_interface"
 sed -e "s/default_interface:-eth0/default_interface:-${default_interface}/" \
   -i /root/puppet_openstack_builder/install-scripts/install.sh
 fi
+
 if [ ! -z ${external_interface} ] ;then
 echo "Setting external interface (VLAN trunk) to $external_interface"
 sed -e "s/external_interface:-eth1/external_interface:-${external_interface}/" \
   -i /root/puppet_openstack_builder/install-scripts/install.sh
+  if [ -z "`grep ${external_interface} /etc/network/interfaces`" ] ;then
+cat >> /etc/network/interfaces <<EOF
+auto ${external_interface}
+iface ${external_interface} inet manual
+EOF
+    if [ ! -z "${MTU}" ] ;then
+cat >> /etc/network/interfaces <<EOF
+    mtu ${MTU}
+EOF
+    fi
+  fi
 fi
 
 if [ ! -z "${ntp_address}" ] ;then
