@@ -1,5 +1,5 @@
 #!/bin/bash
-#] grab the puppet_openstack_builder code
+# grab the puppet_openstack_builder code
 # and update it if it doesn't have the right
 # elements already defined for VLAN/VXLan/LB
 # 
@@ -449,7 +449,7 @@ if [ ! -z "${MTU}" ] ;then
 
   cat > /root/puppet_openstack_builder/install-scripts/fix_mtu.sh <<EOF
 #!/bin/bash
-if [ ! -z "`grep network_device_mtu /usr/share/puppet/modules/neutron/manifests/init.pp`"]
+if [ ! -z "i\grep network_device_mtu /usr/share/puppet/modules/neutron/manifests/init.pp\`"]
   sed -e '/DEFAULT\/dhcp_agents/a \ \ \ \ "DEFAULT/network_device_mtu":      value => \$network_device_mtu;' \
     -i /usr/share/puppet/modules/neutron/manifests/init.pp
   sed -e '/\$dhcp_agents_per_network.*=/a \ \ \$network_device_mtu          = "None",'\
