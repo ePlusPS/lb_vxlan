@@ -355,10 +355,15 @@ echo "Setting default interface (API Interface) to $default_interface"
 
 sed -e "s/default_interface:-eth0/default_interface:-${default_interface}/" \
   -i /root/puppet_openstack_builder/install-scripts/install.sh
-    if [ ! -z "$MTU" ]; then
-      sed -e "/iface ${default_interface}/a \ \ mtu ${MTU}" -i /etc/network/interfaces
-    fi
- fi
+  if [ -z "`grep auto\ ${default_interface}`" ] ;then
+    unset run_all_in_one
+    echo -e "\n\nNOTE: Your API Interface does not appear in /etc/network/interfaces\n\n\
+    You need to address this or the next phase of installation will fail!!\n\n\n\n"
+  fi
+  if [ ! -z "$MTU" ]; then
+    sed -e "/iface ${default_interface}/a \ \ mtu ${MTU}" -i /etc/network/interfaces
+  fi
+fi
 
 if [ ! -z ${external_interface} ] ;then
 echo "Setting external interface (Neutron Flat Network) to $external_interface"
@@ -368,6 +373,7 @@ sed -e "s/external_interface:-eth1/external_interface:-${external_interface}/" \
     cat >> /etc/network/interfaces <<EOF
 auto ${external_interface}
 iface ${external_interface} inet manual
+  up ip link ${external_interface} promisc
 EOF
     if [ ! -z "$MTU" ]; then
       sed -e "/iface ${external_interface}/a \ \ mtu ${MTU}" -i /etc/network/interfaces
