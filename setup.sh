@@ -122,7 +122,7 @@ do
       export default_interface=$OPTARG
       ;;
     E)
-      export externa_interface=$OPTARG
+      export external_interface=$OPTARG
       ;;
   esac
 done
