@@ -243,9 +243,6 @@ iface $initial_interface.$VLAN inet static
 EOF
   fi
 
-  if [ ! -z "$MTU" ]; then
-    sed -e "/iface eth[0-9]/a \ \ mtu ${MTU}" -i /etc/network/interfaces
-  fi
   if [ ! -z "${default_interface}" ]; then
     default_interface=$initial_interface.$VLAN
   else
@@ -257,6 +254,10 @@ EOF
   else
     external_interface='eth1'
     echo "Setting external interface to eth1, should it be something else?  pass it with -E "
+  fi
+  if [ ! -z "$MTU" ]; then
+    sed -e "/iface ${default_interface}/a \ \ mtu ${MTU}" -i /etc/network/interfaces
+    sed -e "/iface ${external_interface}/a \ \ mtu ${MTU}" -i /etc/network/interfaces
   fi
 fi
 
@@ -350,25 +351,26 @@ echo "Fix install.sh script to include cobbler_server in all_in_one/lb_vxlan mod
 sed -e '/cobbler_server/d ' -i /root/puppet_openstack_builder/install-scripts/install.sh
 
 if [ ! -z ${default_interface} ] ;then
-echo "Setting default interface (management interface) to $default_interface"
+echo "Setting default interface (API Interface) to $default_interface"
 
 sed -e "s/default_interface:-eth0/default_interface:-${default_interface}/" \
   -i /root/puppet_openstack_builder/install-scripts/install.sh
-fi
+    if [ ! -z "$MTU" ]; then
+      sed -e "/iface ${default_interface}/a \ \ mtu ${MTU}" -i /etc/network/interfaces
+    fi
+ fi
 
 if [ ! -z ${external_interface} ] ;then
-echo "Setting external interface (VLAN trunk) to $external_interface"
+echo "Setting external interface (Neutron Flat Network) to $external_interface"
 sed -e "s/external_interface:-eth1/external_interface:-${external_interface}/" \
   -i /root/puppet_openstack_builder/install-scripts/install.sh
   if [ -z "`grep ${external_interface} /etc/network/interfaces`" ] ;then
-cat >> /etc/network/interfaces <<EOF
+    cat >> /etc/network/interfaces <<EOF
 auto ${external_interface}
 iface ${external_interface} inet manual
 EOF
-    if [ ! -z "${MTU}" ] ;then
-cat >> /etc/network/interfaces <<EOF
-    mtu ${MTU}
-EOF
+    if [ ! -z "$MTU" ]; then
+      sed -e "/iface ${external_interface}/a \ \ mtu ${MTU}" -i /etc/network/interfaces
     fi
   fi
 fi
@@ -468,8 +470,6 @@ tar xfz vxlan_lb.tgz -C /root/puppet_openstack_builder/modules/
 
 sed -e '/builder\/manifests/a cp -R ~\/puppet_openstack_builder\/modules \/etc\/puppet\/' \
   -i /root/puppet_openstack_builder/install-scripts/install.sh
-
-echo "It is recomended that you reboot and log in via the newly defined IP address: ${ip_address}"
 
 # Run all_in_one deployment?
 if [ ! -z "${run_all_in_one}" ] ;then
