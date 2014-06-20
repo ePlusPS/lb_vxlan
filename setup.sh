@@ -1,5 +1,5 @@
 #!/bin/bash
-#] grab the puppet_openstack_builder code
+# grab the puppet_openstack_builder code
 # and update it if it doesn't have the right
 # elements already defined for VLAN/VXLan/LB
 # 
@@ -122,7 +122,7 @@ do
       export default_interface=$OPTARG
       ;;
     E)
-      export externa_interface=$OPTARG
+      export external_interface=$OPTARG
       ;;
   esac
 done
@@ -243,9 +243,6 @@ iface $initial_interface.$VLAN inet static
 EOF
   fi
 
-  if [ ! -z "$MTU" ]; then
-    sed -e "/iface eth[0-9]/a \ \ mtu ${MTU}" -i /etc/network/interfaces
-  fi
   if [ ! -z "${default_interface}" ]; then
     default_interface=$initial_interface.$VLAN
   else
@@ -257,6 +254,10 @@ EOF
   else
     external_interface='eth1'
     echo "Setting external interface to eth1, should it be something else?  pass it with -E "
+  fi
+  if [ ! -z "$MTU" ]; then
+    sed -e "/iface ${default_interface}/a \ \ mtu ${MTU}" -i /etc/network/interfaces
+    sed -e "/iface ${external_interface}/a \ \ mtu ${MTU}" -i /etc/network/interfaces
   fi
 fi
 
@@ -350,15 +351,34 @@ echo "Fix install.sh script to include cobbler_server in all_in_one/lb_vxlan mod
 sed -e '/cobbler_server/d ' -i /root/puppet_openstack_builder/install-scripts/install.sh
 
 if [ ! -z ${default_interface} ] ;then
-echo "Setting default interface (management interface) to $default_interface"
+echo "Setting default interface (API Interface) to $default_interface"
 
 sed -e "s/default_interface:-eth0/default_interface:-${default_interface}/" \
   -i /root/puppet_openstack_builder/install-scripts/install.sh
+  if [ -z "`grep auto\ ${default_interface}`" ] ;then
+    unset run_all_in_one
+    echo -e "\n\nNOTE: Your API Interface does not appear in /etc/network/interfaces\n\n\
+    You need to address this or the next phase of installation will fail!!\n\n\n\n"
+  fi
+  if [ ! -z "$MTU" ]; then
+    sed -e "/iface ${default_interface}/a \ \ mtu ${MTU}" -i /etc/network/interfaces
+  fi
 fi
+
 if [ ! -z ${external_interface} ] ;then
-echo "Setting external interface (VLAN trunk) to $external_interface"
+echo "Setting external interface (Neutron Flat Network) to $external_interface"
 sed -e "s/external_interface:-eth1/external_interface:-${external_interface}/" \
   -i /root/puppet_openstack_builder/install-scripts/install.sh
+  if [ -z "`grep ${external_interface} /etc/network/interfaces`" ] ;then
+    cat >> /etc/network/interfaces <<EOF
+auto ${external_interface}
+iface ${external_interface} inet manual
+  up ip link ${external_interface} promisc
+EOF
+    if [ ! -z "$MTU" ]; then
+      sed -e "/iface ${external_interface}/a \ \ mtu ${MTU}" -i /etc/network/interfaces
+    fi
+  fi
 fi
 
 if [ ! -z "${ntp_address}" ] ;then
@@ -435,10 +455,12 @@ if [ ! -z "${MTU}" ] ;then
 
   cat > /root/puppet_openstack_builder/install-scripts/fix_mtu.sh <<EOF
 #!/bin/bash
-sed -e '/DEFAULT\/dhcp_agents/a \ \ \ \ "DEFAULT/network_device_mtu":      value => \$network_device_mtu;' \
-  -i /usr/share/puppet/modules/neutron/manifests/init.pp
-sed -e '/\$dhcp_agents_per_network.*=/a \ \ \$network_device_mtu          = "None",'\
-  -i /usr/share/puppet/modules/neutron/manifests/init.pp
+if [ ! -z "i\grep network_device_mtu /usr/share/puppet/modules/neutron/manifests/init.pp\`"]
+  sed -e '/DEFAULT\/dhcp_agents/a \ \ \ \ "DEFAULT/network_device_mtu":      value => \$network_device_mtu;' \
+    -i /usr/share/puppet/modules/neutron/manifests/init.pp
+  sed -e '/\$dhcp_agents_per_network.*=/a \ \ \$network_device_mtu          = "None",'\
+    -i /usr/share/puppet/modules/neutron/manifests/init.pp
+fi
 EOF
 
   chmod +x /root/puppet_openstack_builder/install-scripts/fix_mtu.sh
@@ -454,8 +476,6 @@ tar xfz vxlan_lb.tgz -C /root/puppet_openstack_builder/modules/
 
 sed -e '/builder\/manifests/a cp -R ~\/puppet_openstack_builder\/modules \/etc\/puppet\/' \
   -i /root/puppet_openstack_builder/install-scripts/install.sh
-
-echo "It is recomended that you reboot and log in via the newly defined IP address: ${ip_address}"
 
 # Run all_in_one deployment?
 if [ ! -z "${run_all_in_one}" ] ;then
