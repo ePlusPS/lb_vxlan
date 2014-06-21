@@ -355,7 +355,7 @@ echo "Setting default interface (API Interface) to $default_interface"
 
 sed -e "s/default_interface:-eth0/default_interface:-${default_interface}/" \
   -i /root/puppet_openstack_builder/install-scripts/install.sh
-  if [ -z "`grep auto\ ${default_interface}`" ] ;then
+  if [ -z "`grep auto\ ${default_interface}` /etc/network/interfaces" ] ;then
     unset run_all_in_one
     echo -e "\n\nNOTE: Your API Interface does not appear in /etc/network/interfaces\n\n\
     You need to address this or the next phase of installation will fail!!\n\n\n\n"
