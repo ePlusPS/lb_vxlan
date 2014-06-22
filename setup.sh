@@ -465,6 +465,7 @@ if [ ! -z "${MTU}" ] ;then
 
   cat > /root/puppet_openstack_builder/install-scripts/fix_mtu.sh <<EOF
 #!/bin/bash
+# added to addresss: https://bugs.launchpad.net/puppet-neutron/+bug/1329643
 if [ -z "\`grep network_device_mtu /usr/share/puppet/modules/neutron/manifests/init.pp\`"] ;then
   sed -e '/DEFAULT\/dhcp_agents/a \ \ \ \ "DEFAULT/network_device_mtu":      value => \$network_device_mtu;' \
     -i /usr/share/puppet/modules/neutron/manifests/init.pp
