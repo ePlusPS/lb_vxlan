@@ -373,7 +373,7 @@ sed -e "s/external_interface:-eth1/external_interface:-${external_interface}/" \
     cat >> /etc/network/interfaces <<EOF
 auto ${external_interface}
 iface ${external_interface} inet manual
-  up ip link ${external_interface} promisc
+  up ip link set ${external_interface} promisc on
 EOF
     if [ ! -z "$MTU" ]; then
       sed -e "/iface ${external_interface}/a \ \ mtu ${MTU}" -i /etc/network/interfaces
