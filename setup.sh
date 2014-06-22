@@ -401,8 +401,16 @@ vni_ranges:\
 vxlan_group: 229.1.2.3\
 flat_networks:\
  - physnet1\
+ - physnet2\
+ - physnet3\
+neutron::agents::linuxbridge::network_vlan_ranges:\
+ - physnet1\
+ - physnet2\
+ - physnet3\
 physical_interface_mappings:\
- - physnet1:\${external_interface}\
+ - physnet1:eth2\
+ - physnet2:eth3\
+ - physnet3:eth4\
 neutron::agents::linuxbridge::physical_interface_mappings:\
  - physnet1:\${external_interface}\
 ' -i /root/puppet_openstack_builder/install-scripts/install.sh
@@ -452,10 +460,12 @@ sed -e 's/tenant_network_type: .*/tenant_network_type: vxlan/' \
 if [ ! -z "${MTU}" ] ;then
   sed -e "/openstack_release/a neutron::network_device_mtu: ${MTU}" \
     -i /root/puppet_openstack_builder/install-scripts/install.sh
+  sed -e "/openstack_release/a nova::network_device_mtu: ${MTU}" \
+    -i /root/puppet_openstack_builder/install-scripts/install.sh
 
   cat > /root/puppet_openstack_builder/install-scripts/fix_mtu.sh <<EOF
 #!/bin/bash
-if [ ! -z "i\grep network_device_mtu /usr/share/puppet/modules/neutron/manifests/init.pp\`"]
+if [ -z "\`grep network_device_mtu /usr/share/puppet/modules/neutron/manifests/init.pp\`"]
   sed -e '/DEFAULT\/dhcp_agents/a \ \ \ \ "DEFAULT/network_device_mtu":      value => \$network_device_mtu;' \
     -i /usr/share/puppet/modules/neutron/manifests/init.pp
   sed -e '/\$dhcp_agents_per_network.*=/a \ \ \$network_device_mtu          = "None",'\
