@@ -428,7 +428,7 @@ physical_interface_mappings:\
 ' -i /root/puppet_openstack_builder/install-scripts/install.sh
 
 for n in `echo $interfaces | sed -e 's/:/ /g'` ; do
-  iface_id=`echo $n | sed -e 's/.*\([0-9]*\)/\1/'`
+  iface_id=`echo $n | sed -e 's/eth//'`
   sed -e "/flat_networks/a \ -\ physnet${iface_id}" -i /root/puppet_openstack_builder/install-scripts/install.sh
   sed -e "/network_vlan_ranges/a \ -\ physnet${iface_id}" -i /root/puppet_openstack_builder/install-scripts/install.sh
   sed -e "/physical_interface_mappings/a \ -\ physnet${iface_id}:${n}" -i /root/puppet_openstack_builder/install-scripts/install.sh
