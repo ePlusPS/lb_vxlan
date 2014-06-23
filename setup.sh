@@ -382,6 +382,7 @@ sed -e "s/default_interface:-eth0/default_interface:-${default_interface}/" \
     unset run_all_in_one
     echo -e "\n\nNOTE: Your API Interface does not appear in /etc/network/interfaces\n\n\
     You need to address this or the next phase of installation will fail!!\n\n\n\n"
+    exit 1
   fi
   # if [ ! -z "$MTU" ]; then
   #   sed -e "/iface ${default_interface}/a \ \ mtu ${MTU}" -i /etc/network/interfaces
