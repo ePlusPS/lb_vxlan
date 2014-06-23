@@ -4,7 +4,7 @@
 # Grab the openstack credentials
 source ~/openrc
 
-if [ -z "`glance image-list | grep trusty`" ] ;then
+if [ ! -z "`glance image-list | grep trusty`" ] ;then
 	if [ -f ./trusty-server-cloudimg-amd64-disk1.img ] ; then
 	  wget https://cloud-images.ubuntu.com/trusty/current/trusty-server-cloudimg-amd64-disk1.img
     fi
