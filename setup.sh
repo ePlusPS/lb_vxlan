@@ -26,6 +26,24 @@ OPTIONS:
 -t {ntp}            ntp server address
 -D {default_int}    default interface (usually eth0)
 -E {external_int}   external interface (usually eth1)
+-I {interfaces}     interfaces : separated (usually eth0:eth1:eth2:eth3)
+-M {mtu_interfaces} interfaces with MTUs : separated (eth3:9000:eth4:9000)
+
+The script expects at least one parameter, so at a minimum pass -t to set
+the ntp server to something other than 1.pool.ntp.com
+
+more commonly, you may want to use a different Default interface (for API endpoint)
+or set the MTU on an interface (the "external" interface).
+
+If you have multiple interfaces, and want the OpenStack config to include them
+pass them as a colon separated list to the -I parameter (not this should include
+  any interface you pass as the -E parameter as they set different components of
+  the environment).
+
+An example, with the default interface on eth1, the large MTU interface as eth3, and
+eth2 and eth4 also being created:
+
+./setup.sh -t ntp.esl.cisco.com -m -D eth1 -E eth3 -I eth2:eth3:eth4 -r
 EOF
 }
 export -f usage
@@ -81,7 +99,7 @@ function valid_ip()
 export valid_ip
 
 # parse CLI options
-while getopts "hmrp:v:i:n:g:d:t:D:E:" OPTION
+while getopts "hmrp:v:i:n:g:d:t:D:E:I:M:" OPTION
 do
   case $OPTION in
     h)
@@ -124,6 +142,11 @@ do
     E)
       export external_interface=$OPTARG
       ;;
+    I)
+      export interfaces=$OPTARG
+      ;;
+    M)
+      export mtus=$OPTARG
   esac
 done
 
@@ -360,9 +383,9 @@ sed -e "s/default_interface:-eth0/default_interface:-${default_interface}/" \
     echo -e "\n\nNOTE: Your API Interface does not appear in /etc/network/interfaces\n\n\
     You need to address this or the next phase of installation will fail!!\n\n\n\n"
   fi
-  if [ ! -z "$MTU" ]; then
-    sed -e "/iface ${default_interface}/a \ \ mtu ${MTU}" -i /etc/network/interfaces
-  fi
+  # if [ ! -z "$MTU" ]; then
+  #   sed -e "/iface ${default_interface}/a \ \ mtu ${MTU}" -i /etc/network/interfaces
+  # fi
 fi
 
 if [ ! -z ${external_interface} ] ;then
@@ -400,20 +423,16 @@ vni_ranges:\
  - 100:10000\
 vxlan_group: 229.1.2.3\
 flat_networks:\
- - physnet1\
- - physnet2\
- - physnet3\
 neutron::agents::linuxbridge::network_vlan_ranges:\
- - physnet1\
- - physnet2\
- - physnet3\
 physical_interface_mappings:\
- - physnet1:eth2\
- - physnet2:eth3\
- - physnet3:eth4\
-neutron::agents::linuxbridge::physical_interface_mappings:\
- - physnet1:\${external_interface}\
 ' -i /root/puppet_openstack_builder/install-scripts/install.sh
+
+for n in `echo $interfaces | sed -e 's/:/ /g'` ; do
+  iface_id=`echo $n | sed -e 's/eth//'`
+  sed -e "/flat_networks/a \ -\ physnet${iface_id}" -i /root/puppet_openstack_builder/install-scripts/install.sh
+  sed -e "/network_vlan_ranges/a \ -\ physnet${iface_id}" -i /root/puppet_openstack_builder/install-scripts/install.sh
+  sed -e "/physical_interface_mappings/a \ -\ physnet${iface_id}:${n}" -i /root/puppet_openstack_builder/install-scripts/install.sh
+done
 
 echo "Setup Ml2_plugin network_plugin yaml"
 cat > /root/puppet_openstack_builder/data/hiera_data/network_plugin/ml2_lb_vxlan.yaml <<EOF
