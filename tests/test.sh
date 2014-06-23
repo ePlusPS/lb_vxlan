@@ -49,7 +49,7 @@ neutron subnet-create --ip-version 4 --tenant-id `keystone tenant-list | awk '/ 
 neutron net-create --tenant-id `keystone tenant-list | awk '/ openstack /  {print $2}'` \
   vlannet1 --shared --provider:network_type vlan --provider:physical_network physnet2 --provider:segmentation_id 144
 neutron subnet-create --ip-version 4 --tenant-id `keystone tenant-list | awk '/ openstack / {print $2}'` \
- sharednet1 192.168.144.0/24 --allocation-pool start=192.168.144.100,end=192.168.144.200 --dns_nameservers \
+ vlannet1 192.168.144.0/24 --allocation-pool start=192.168.144.100,end=192.168.144.200 --dns_nameservers \
  list=true 8.8.8.8
 
 # Create a tenant network which will default to vxlan
