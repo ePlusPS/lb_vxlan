@@ -408,7 +408,7 @@ vni_ranges:\
 vxlan_group: 229.1.2.3\
 flat_networks:\
 neutron::agents::linuxbridge::network_vlan_ranges:\
-neutron::agents::linuxbridge::physical_interface_mappings:\
+physical_interface_mappings:\
 ' -i /root/puppet_openstack_builder/install-scripts/install.sh
 
 for n in `echo $interfaces | sed -e 's/:/ /g'` ; do
