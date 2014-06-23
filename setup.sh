@@ -28,6 +28,22 @@ OPTIONS:
 -E {external_int}   external interface (usually eth1)
 -I {interfaces}     interfaces : separated (usually eth0:eth1:eth2:eth3)
 -M {mtu_interfaces} interfaces with MTUs : separated (eth3:9000:eth4:9000)
+
+The script expects at least one parameter, so at a minimum pass -t to set
+the ntp server to something other than 1.pool.ntp.com
+
+more commonly, you may want to use a different Default interface (for API endpoint)
+or set the MTU on an interface (the "external" interface).
+
+If you have multiple interfaces, and want the OpenStack config to include them
+pass them as a colon separated list to the -I parameter (not this should include
+  any interface you pass as the -E parameter as they set different components of
+  the environment).
+
+An example, with the default interface on eth1, the large MTU interface as eth3, and
+eth2 and eth4 also being created:
+
+./setup.sh -t ntp.esl.cisco.com -m -D eth1 -E eth3 -I eth2:eth3:eth4 -r
 EOF
 }
 export -f usage
@@ -367,9 +383,9 @@ sed -e "s/default_interface:-eth0/default_interface:-${default_interface}/" \
     echo -e "\n\nNOTE: Your API Interface does not appear in /etc/network/interfaces\n\n\
     You need to address this or the next phase of installation will fail!!\n\n\n\n"
   fi
-  if [ ! -z "$MTU" ]; then
-    sed -e "/iface ${default_interface}/a \ \ mtu ${MTU}" -i /etc/network/interfaces
-  fi
+  # if [ ! -z "$MTU" ]; then
+  #   sed -e "/iface ${default_interface}/a \ \ mtu ${MTU}" -i /etc/network/interfaces
+  # fi
 fi
 
 if [ ! -z ${external_interface} ] ;then
