@@ -26,6 +26,8 @@ OPTIONS:
 -t {ntp}            ntp server address
 -D {default_int}    default interface (usually eth0)
 -E {external_int}   external interface (usually eth1)
+-I {interfaces}     interfaces : separated (usually eth0:eth1:eth2:eth3)
+-M {mtu_interfaces} interfaces with MTUs : separated (eth3:9000:eth4:9000)
 EOF
 }
 export -f usage
@@ -81,7 +83,7 @@ function valid_ip()
 export valid_ip
 
 # parse CLI options
-while getopts "hmrp:v:i:n:g:d:t:D:E:" OPTION
+while getopts "hmrp:v:i:n:g:d:t:D:E:I:M:" OPTION
 do
   case $OPTION in
     h)
@@ -124,6 +126,11 @@ do
     E)
       export external_interface=$OPTARG
       ;;
+    I)
+      export interfaces=$OPTARG
+      ;;
+    M)
+      export mtus=$OPTARG
   esac
 done
 
@@ -400,20 +407,16 @@ vni_ranges:\
  - 100:10000\
 vxlan_group: 229.1.2.3\
 flat_networks:\
- - physnet1\
- - physnet2\
- - physnet3\
 neutron::agents::linuxbridge::network_vlan_ranges:\
- - physnet1\
- - physnet2\
- - physnet3\
-physical_interface_mappings:\
- - physnet1:eth2\
- - physnet2:eth3\
- - physnet3:eth4\
 neutron::agents::linuxbridge::physical_interface_mappings:\
- - physnet1:\${external_interface}\
 ' -i /root/puppet_openstack_builder/install-scripts/install.sh
+
+for n in `echo $interfaces | sed -e 's/:/ /g'` ; do
+  iface_id=`echo $n | sed -e 's/\([0-9]*\)/\1/'`
+  sed -e "/flat_networks/a \ -\ physnet${iface_id}" -i /root/puppet/openstack_builder/install-scripts/install.sh
+  sed -e "/network_vlan_ranges/a \ -\ physnet${iface_id}" -i /root/puppet/openstack_builder/install-scripts/install.sh
+  sed -e "/physical_interface_mappings/a \ -\ physnet${iface_id}:${n}" -i /root/puppet/openstack_builder/install-scripts/install.sh
+done
 
 echo "Setup Ml2_plugin network_plugin yaml"
 cat > /root/puppet_openstack_builder/data/hiera_data/network_plugin/ml2_lb_vxlan.yaml <<EOF

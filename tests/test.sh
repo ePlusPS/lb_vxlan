@@ -4,12 +4,18 @@
 # Grab the openstack credentials
 source ~/openrc
 
+if [ ! -z "`facter | grep kvm`" ] ;then
+  arch=i386
+else
+  arch=amd64
+fi
+
 if [ -z "`glance image-list | grep trusty`" ] ;then
-	if [ ! -f ./trusty-server-cloudimg-amd64-disk1.img ] ; then
-	  wget https://cloud-images.ubuntu.com/trusty/current/trusty-server-cloudimg-amd64-disk1.img
+	if [ ! -f ./trusty-server-cloudimg-${arch}-disk1.img ] ; then
+	  wget https://cloud-images.ubuntu.com/trusty/current/trusty-server-cloudimg-${arch}-disk1.img
     fi
 glance image-create --name=trusty --disk-format=qcow2 --container-format=bare --is-public=true \
---file=./trusty-server-cloudimg-amd64-disk1.img
+--file=./trusty-server-cloudimg-${arch}-disk1.img
 fi
 
  
