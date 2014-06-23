@@ -7,7 +7,7 @@ if [ $? ] ; then echo Deleted vxa; fi
 nova delete vxb
 if [ $? ] ; then echo Deleted vxb; fi
 nova delete vxc
-if [ $? ] ; then echo Deleted vxb; fi
+if [ $? ] ; then echo Deleted vxc; fi
 sleep 2
 neutron net-delete sharednet1
 
