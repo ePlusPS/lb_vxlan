@@ -413,8 +413,8 @@ rm -rf /etc/puppet/puppet.conf /var/lib/puppet
 apt-get install puppet -y
 
 if [ ! -z "${puppet_server}" ] ;then
-sed -e "/logdir/ a pluginsync=true" -i /target/etc/puppet/puppet.conf ; \
-sed -e "/logdir/ a server=aio8.onecloud" -i /target/etc/puppet/puppet.conf ; \
+sed -e "/logdir/ a pluginsync=true" -i /etc/puppet/puppet.conf ; \
+sed -e "/logdir/ a server=aio8.onecloud" -i /etc/puppet/puppet.conf ; \
 else
   echo "set server={puppet server hostname} and pluginsync=true in /etc/puppet/puppet.conf"
   echo "and ensure that the puppet server fqdn is configured in /etc/hosts or in upstream DNS!"
