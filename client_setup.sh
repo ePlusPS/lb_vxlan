@@ -43,7 +43,7 @@ pass them as a colon separated list to the -I parameter (not this should include
 An example, with the default interface on eth1, the large MTU interface as eth3, and
 eth2 and eth4 also being created:
 
-./setup.sh -t ntp.esl.cisco.com -m -D eth1 -E eth3 -I eth2:eth3:eth4 -r
+./client_setup.sh -t ntp.esl.cisco.com -m -D eth1 -E eth3 -P build.lab I 10.0.0.10 -r
 EOF
 }
 export -f usage
@@ -423,8 +423,6 @@ fi
 if [ ! -z ${default_interface} ] ;then
 echo "Setting default interface (API Interface) to $default_interface"
 
-sed -e "s/default_interface:-eth0/default_interface:-${default_interface}/" \
-  -i /root/puppet_openstack_builder/install-scripts/install.sh
   if [ -z "`grep auto\ ${default_interface} /etc/network/interfaces`" ] ;then
     unset run_all_in_one
     echo -e "\n\nNOTE: Your API Interface does not appear in /etc/network/interfaces\n\n\
@@ -438,8 +436,6 @@ fi
 
 if [ ! -z ${external_interface} ] ;then
 echo "Setting external interface (Neutron Flat Network) to $external_interface"
-sed -e "s/external_interface:-eth1/external_interface:-${external_interface}/" \
-  -i /root/puppet_openstack_builder/install-scripts/install.sh
   if [ -z "`grep ${external_interface} /etc/network/interfaces`" ] ;then
     cat >> /etc/network/interfaces <<EOF
 auto ${external_interface}
@@ -453,8 +449,10 @@ EOF
 fi
 
 if [ ! -z "${ntp_address}" ] ;then
-sed -e "s/pool.ntp.org/${ntp_address}/" \
-  -i /root/puppet_openstack_builder/install-scripts/install.sh
+  apt-get install -y ntp
+  echo "server ${ntp_address} iburst" >/etc/ntp.conf
+  service ntp restart
+  ntpq -p
 fi
 
 
