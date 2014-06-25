@@ -155,6 +155,12 @@ if [ $# -eq 0 ] ;then
   exit 1
 fi
 
+if [ -z "${puppet_ip}" ] ;then
+  echo "You need to set your puppet master for this script!"
+  pass "-P puppet_master_fqdn and -I puppet_master_ip"
+  exit 1
+fi
+
 # Make sure the apt repository list is up to date
 echo -e "\n\nUpdate apt repository...\n\n"
 if ! run_cmd apt-get $APT_CONFIG update; then
@@ -417,6 +423,7 @@ sed -e "/logdir/ a pluginsync=true" -i /etc/puppet/puppet.conf
 sed -e "/logdir/ a server=aio8.onecloud" -i /etc/puppet/puppet.conf
   if [ -z "`grep ${puppet_server} /etc/hosts`" && ! -z "${puppet_ip}" ] ;then
     echo "${puppet_ip}  ${puppet_server}" >> /etc/hosts
+    puppet agent --enable
   fi
 else
   echo "set server={puppet server hostname} and pluginsync=true in /etc/puppet/puppet.conf"
