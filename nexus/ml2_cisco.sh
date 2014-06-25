@@ -23,13 +23,13 @@ hypervisor2[0]='compute8'
 hypervisor2[1]='e1/47'
 hypervisor2[2]='e1/48'
 
-if [ -z "`grep ml2_cisco /etc/neutron/plugin.ini`" ]; then
+if [ -z "`grep ml2_cisco /etc/neutron/plugins/ml2/ml2_conf.ini`" ]; then
 
-sed -e 's/mechanism_drivers=/mechanism_drivers=cisco_nexus,/' -i /etc/neutron/plugin.ini
-cat >> /etc/neutron/plugin.ini <<EOF
+sed -e 's/mechanism_drivers=/mechanism_drivers=cisco_nexus,/' -i /etc/neutron/plugins/ml2/ml2_conf.ini
+cat >> /etc/neutron/plugins/ml2/ml2_conf.ini <<EOF
 [ml2_cisco]
-vlan_name_prefix = os-gen-
-svi_round_robin = True
+vlan_name_prefix = q-
+svi_round_robin = False
 managed_physical_network = physnet1
 
 # Cisco switch configuration(s)
@@ -39,12 +39,12 @@ EOF
 fi
 
 # switch one
-echo "[ml2_mech_cisco_nexus:${switch_one}]" >> /etc/neutron/plugin.ini
+echo "[ml2_mech_cisco_nexus:${switch_one}]" >> /etc/neutron/plugins/ml2/ml2_conf.ini
 for ((i=1;i<${#hypervisor1[@]};i++)) ;do
-echo "${hypervisor1[0]}=${hypervisor1[$i]}" >> /etc/neutron/plugin.ini
-echo "${hypervisor2[0]}=${hypervisor2[$i]}" >> /etc/neutron/plugin.ini
+echo "${hypervisor1[0]}=${hypervisor1[$i]}" >> /etc/neutron/plugins/ml2/ml2_conf.ini
+echo "${hypervisor2[0]}=${hypervisor2[$i]}" >> /etc/neutron/plugins/ml2/ml2_conf.ini
 done
-cat >> /etc/neutron/plugin.ini <<EOF
+cat >> /etc/neutron/plugins/ml2/ml2_conf.ini <<EOF
 ssh_port=22
 username=${admin_user}
 password=${admin_pass}
@@ -53,12 +53,12 @@ EOF
 
 #switch two
 
-# echo "[ml2_mech_cisco_nexus:${switch_two}]" >> /etc/neutron/plugin.ini
+# echo "[ml2_mech_cisco_nexus:${switch_two}]" >> /etc/neutron/plugins/ml2/ml2_conf.ini
 # for ((i=1;i<${#hypervisor2[@]};i++)) ;do
-# echo "${hypervisor1[0]}=${hypervisor1[$i]}" >> /etc/neutron/plugin.ini
-# echo "${hypervisor2[0]}=${hypervisor2[$i]}" >> /etc/neutron/plugin.ini
+# echo "${hypervisor1[0]}=${hypervisor1[$i]}" >> /etc/neutron/plugins/ml2/ml2_conf.ini
+# echo "${hypervisor2[0]}=${hypervisor2[$i]}" >> /etc/neutron/plugins/ml2/ml2_conf.ini
 # done
-# cat >> /etc/neutron/plugin.ini <<EOF
+# cat >> /etc/neutron/plugins/ml2/ml2_conf.ini <<EOF
 # ssh_port=22
 # username=${admin_user}
 # password=${admin_pass}
