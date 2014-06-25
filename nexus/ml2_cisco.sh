@@ -29,13 +29,12 @@ EOF
 fi
 
 # switch one
-
 echo "[ml2_mech_cisco_nexus:${switch_one}]" >> /etc/neutron/plugin.ini
 for ((i=1;i<${#hypervisor1[@]};i++)) ;do
 echo "${hypervisor1[0]}=${hypervisor1[$i]}" >> /etc/neutron/plugin.ini
 echo "${hypervisor2[0]}=${hypervisor2[$i]}" >> /etc/neutron/plugin.ini
 done
-cat >> /etc/neutron/plugin.ini
+cat >> /etc/neutron/plugin.ini <<EOF
 ssh_port=22
 username=${admin_user}
 password=${admin_pass}
@@ -49,7 +48,7 @@ EOF
 # echo "${hypervisor1[0]}=${hypervisor1[$i]}" >> /etc/neutron/plugin.ini
 # echo "${hypervisor2[0]}=${hypervisor2[$i]}" >> /etc/neutron/plugin.ini
 # done
-# cat >> /etc/neutron/plugin.ini
+# cat >> /etc/neutron/plugin.ini <<EOF
 # ssh_port=22
 # username=${admin_user}
 # password=${admin_pass}
