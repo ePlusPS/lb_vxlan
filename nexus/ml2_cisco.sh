@@ -31,9 +31,9 @@ fi
 # switch one
 
 echo "[ml2_mech_cisco_nexus:${switch_one}]" >> /etc/neutron/plugin.ini
-for ((i=1;i<$hypervisor[@];i++)) ;do
-echo "$hypervisor1[0]=$hypervisor1[$i]" >> /etc/neutron/plugin.ini
-echo "$hypervisor2[0]=$hypervisor2[$i]" >> /etc/neutron/plugin.ini
+for ((i=1;i<${hypervisor1[@]};i++)) ;do
+echo "${hypervisor1[0]}=${hypervisor1[$i]}" >> /etc/neutron/plugin.ini
+echo "${hypervisor2[0]}=${hypervisor2[$i]}" >> /etc/neutron/plugin.ini
 done
 cat >> /etc/neutron/plugin.ini
 ssh_port=22
@@ -45,9 +45,9 @@ EOF
 #switch two
 
 # echo "[ml2_mech_cisco_nexus:${switch_two}]" >> /etc/neutron/plugin.ini
-# for ((i=1;i<$hypervisor[@];i++)) ;do
-# echo "$hypervisor1[0]=$hypervisor1[$i]" >> /etc/neutron/plugin.ini
-# echo "$hypervisor2[0]=$hypervisor2[$i]" >> /etc/neutron/plugin.ini
+# for ((i=1;i<${hypervisor2[@]};i++)) ;do
+# echo "${hypervisor1[0]}=${hypervisor1[$i]}" >> /etc/neutron/plugin.ini
+# echo "${hypervisor2[0]}=${hypervisor2[$i]}" >> /etc/neutron/plugin.ini
 # done
 # cat >> /etc/neutron/plugin.ini
 # ssh_port=22
