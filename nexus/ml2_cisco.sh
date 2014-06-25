@@ -1,5 +1,15 @@
 #!/bin/bash
 
+mkdir ~neutron/.ssh
+cat >> ~neutron/.ssh/known_hosts <<EOF
+|1|N8KzQU0nKIAgyX/qDsZA8UA725w=|GeojME5hmoAu5m3+rx2WKghyzjA= ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAAAgQDKzXfRCwUAswY6PfD/Myy7z9RbAk0LVZTpOIF8jtNonPVWbz+m2ZJ8SXjAaVsjwXOvLEHgapqyISPT8sLVtmQq+GPlx2ixZMmG5LYPPXDlsbfqh0yPdBmJ+kGIQcC4nXn1wIC+F6Zv1Yml6s4tvuFK9kzxQ4UjnS55U0in++j1Gw==
+EOF
+chown neutron.neutron -R ~neutron/.ssh/
+chmod 700 ~neutron/.ssh
+
+git clone https://github.com/CiscoSystems/ncclient.git /root/ncclient
+
+(cd /root/ncclient; python ./setup.py install)
 ## This is a stub and needs a proper front end to capture the right parameters
 
 switch_one='10.1.64.1'
@@ -54,5 +64,7 @@ EOF
 # password=${admin_pass}
 
 # EOF
+
+for n in `ls /etc/init/neutron*`; do m=$(basename $n); o=${m%.*}; service $o restart; done
 
 
