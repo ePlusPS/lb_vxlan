@@ -17,11 +17,11 @@ switch_two='10.1.64.2'
 admin_user='admin'
 admin_pass='!cisco123'
 hypervisor1[0]='aio8'
-hypervisor1[1]='e1/33'
-hypervisor1[2]='e1/34'
+hypervisor1[1]='1/33'
+#hypervisor1[2]='1/34'
 hypervisor2[0]='compute8'
-hypervisor2[1]='e1/47'
-hypervisor2[2]='e1/48'
+hypervisor2[1]='1/47'
+#hypervisor2[2]='1/48'
 
 if [ -z "`grep ml2_cisco /etc/neutron/plugins/ml2/ml2_conf.ini`" ]; then
 

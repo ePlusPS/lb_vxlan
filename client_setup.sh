@@ -157,9 +157,20 @@ fi
 
 if [ -z "${puppet_ip}" ] ;then
   echo "You need to set your puppet master for this script!"
-  pass "-P puppet_master_fqdn and -I puppet_master_ip"
+  echo "-P puppet_master_fqdn and -I puppet_master_ip"
   exit 1
 fi
+
+if [ -z "${puppet_server}" ] ;then
+  echo "You need to set your puppet master for this script!"
+  echo "-P puppet_master_fqdn and -I puppet_master_ip"
+  exit 1
+fi
+
+if [ ! ${puppet_server} ?? '.' ] ;then
+  echo "You need to pass a FQDN (host.domain) for the puppet server"
+  exit 1
+fi 
 
 # Make sure the apt repository list is up to date
 echo -e "\n\nUpdate apt repository...\n\n"
@@ -420,7 +431,7 @@ apt-get install puppet -y
 
 if [ ! -z "${puppet_server}" ] ;then
 sed -e "/logdir/ a pluginsync=true" -i /etc/puppet/puppet.conf
-sed -e "/logdir/ a server=aio8.onecloud" -i /etc/puppet/puppet.conf
+sed -e "/logdir/ a server=${puppet_server}" -i /etc/puppet/puppet.conf
   if [ -z "`grep ${puppet_server} /etc/hosts`" && ! -z "${puppet_ip}" ] ;then
     echo "${puppet_ip}  ${puppet_server}" >> /etc/hosts
     puppet agent --enable
